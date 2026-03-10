@@ -1,0 +1,351 @@
+import React, { useEffect, useState } from "react";
+import Head from "@/layout/head";
+import Content from "@/layout/content";
+import {
+    Block,
+    BlockBetween,
+    BlockHead,
+    BlockHeadContent,
+    BlockTitle,
+    Button,
+    Icon,
+    PreviewCard,
+    ReactDataTable,
+} from "@/components";
+import { useYearContext } from "@/common/hooks/useYearContext";
+import { useInstitutionContext } from "@/common/hooks/useInstitutionContext";
+import { Badge, Modal, ModalHeader, ModalBody, ModalFooter, Col, Row, FormGroup, Label, ButtonGroup } from "reactstrap";
+import { formatCurrency, formatNumber, getPaymentStatusColor, getPaymentStatusText } from "@/helpers";
+import { studentInvoice } from "@/common/api/student";
+import { cash as cashPayment, get as getPayment } from "@/common/api/payment";
+import { generateReceipt } from "@/common/api/payment/receipt";
+import type { ColumnType, StudentInvoiceType } from "@/types";
+import Select from "react-select";
+
+type PaymentType = {
+    id: number;
+    name: string;
+    reference: string;
+    method: number;
+    status: string;
+    transaction_id: string;
+    transaction_time: string;
+    amount: number;
+    created_at: string;
+}
+
+const Treasure = () => {
+    const year = useYearContext();
+    const institution = useInstitutionContext();
+    const [loadData, setLoadData] = useState(true);
+    const [payments, setPayments] = useState<PaymentType[]>([]);
+    const [students, setStudents] = useState<StudentInvoiceType[]>([]);
+    const [modal, setModal] = useState({
+        cash: false,
+        detail: false,
+    });
+    const [selectedStudent, setSelectedStudent] = useState<any>(null);
+    const [selectedPayment, setSelectedPayment] = useState<PaymentType | null>(null);
+
+    const [paymentAmount, setPaymentAmount] = useState<number>(0);
+
+    const Column: ColumnType<PaymentType>[] = [
+        {
+            name: "Waktu",
+            selector: (row) => row.transaction_time || row.created_at,
+            sortable: true,
+            width: "180px",
+        },
+        {
+            name: "Siswa",
+            selector: (row) => row.name,
+            sortable: true,
+        },
+        {
+            name: "Invoice",
+            selector: (row) => row.reference || '-',
+            sortable: false,
+        },
+        {
+            name: "Metode",
+            selector: (row) => row.method === 1 ? 'Cash' : 'Midtrans',
+            sortable: false,
+        },
+        {
+            name: "Jumlah",
+            selector: (row) => formatCurrency(row.amount),
+            sortable: false,
+        },
+
+        {
+            name: 'Aksi',
+            selector: (row: any) => row.id,
+            sortable: false,
+            cell: (item: any) => (
+                <ButtonGroup size="sm">
+                    <Button
+                        outline
+                        color="info"
+                        onClick={() => {
+                            setSelectedPayment(item);
+                            setModal({ ...modal, detail: true });
+                        }}
+                        title="Detail Pembayaran"
+                    >
+                        <Icon name="eye" />
+                    </Button>
+                    {(Number(item.status) === 2 || item.status === 'PAID') && (
+                        <Button
+                            outline
+                            color="success"
+                            onClick={() => handleDownloadReceipt(item.id)}
+                            title="Download Bukti Pembayaran"
+                        >
+                            <Icon name="download" />
+                        </Button>
+                    )}
+                </ButtonGroup>
+            )
+        },
+    ];
+
+    useEffect(() => {
+        if (loadData && year?.id && institution?.id) {
+            getPayment<PaymentType>({ yearId: year.id, institutionId: institution.id })
+                .then((resp) => {
+                    setPayments(resp);
+                })
+                .finally(() => {
+                    setLoadData(false);
+                });
+        }
+    }, [loadData, year, institution]);
+
+    const fetchStudents = () => {
+        if (year?.id && institution?.id) {
+            studentInvoice({ yearId: year.id, institutionId: institution.id })
+                .then((resp) => {
+                    // Filter only students with unpaid invoices
+                    const unpaid = resp.filter(s => s.invoice && s.invoice.status !== 'PAID');
+                    setStudents(unpaid);
+                });
+        }
+    };
+
+    const handleCashPayment = () => {
+        if (selectedStudent && selectedStudent.invoice) {
+            cashPayment({
+                userId: selectedStudent.userId,
+                invoiceId: selectedStudent.invoice.id,
+                method: 2,
+                amount: paymentAmount
+            }).then((resp) => {
+                if (resp.status === 'success') {
+                    setLoadData(true);
+                    setModal({...modal, cash: false });
+                    setSelectedStudent(null);
+                    setPaymentAmount(0);
+                }
+            });
+        }
+    };
+
+    const toggleModal = () => {
+        if (!modal.cash) {
+            fetchStudents();
+        }
+        setModal({...modal, cash: !modal.cash });
+        setSelectedStudent(null);
+        setPaymentAmount(0);
+    };
+
+    const handleDownloadReceipt = async (paymentId: number) => {
+        try {
+            const blob = await generateReceipt(paymentId, window.location.origin);
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `receipt-${paymentId}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error downloading receipt:', error);
+        }
+    };
+
+    return (
+        <React.Fragment>
+            <Head title="Data Pembayaran" />
+            <Content>
+                <Block size="lg">
+                    <BlockHead>
+                        <BlockBetween>
+                            <BlockHeadContent>
+                                <BlockTitle tag="h5">Data Pembayaran</BlockTitle>
+                                <p>
+                                    History Pembayaran Pendaftaran {institution?.surname} Tahun Ajaran {year?.name}
+                                </p>
+                            </BlockHeadContent>
+                            <BlockHeadContent>
+                                <Button color="success" onClick={toggleModal}>
+                                    <Icon name="money" /> <span>Bayar Cash</span>
+                                </Button>
+                            </BlockHeadContent>
+                        </BlockBetween>
+                    </BlockHead>
+                    <PreviewCard>
+                        <ReactDataTable
+                            data={payments}
+                            columns={Column}
+                            pagination
+                            progressPending={loadData}
+                        />
+                    </PreviewCard>
+                </Block>
+
+                <Modal isOpen={modal.cash} toggle={toggleModal}>
+                    <ModalHeader toggle={toggleModal}>Input Pembayaran Cash</ModalHeader>
+                    <ModalBody>
+                        <FormGroup>
+                            <Label>Pilih Siswa</Label>
+                            <Select
+                                options={students.map(s => ({
+                                    value: s.userId,
+                                    label: `${s.name} (${s.invoice?.reference}) - ${formatCurrency(s.invoice?.amount || 0)}`,
+                                    data: s
+                                }))}
+                                onChange={(opt) => {
+                                    setSelectedStudent(opt?.data);
+                                    setPaymentAmount(opt?.data?.invoice?.amount || 0);
+                                }}
+                                placeholder="Cari nama siswa..."
+                            />
+                        </FormGroup>
+                        {selectedStudent && (
+                            <div className="mt-3">
+                                <h6>Detail Pembayaran:</h6>
+                                <Row className="gy-1 mb-3">
+                                    <Col sm={4}><strong>Invoice</strong></Col>
+                                    <Col sm={8}>: {selectedStudent.invoice?.reference}</Col>
+                                    <Col sm={4}><strong>Total Tagihan</strong></Col>
+                                    <Col sm={8}>: {formatCurrency(selectedStudent.invoice?.amount || 0)}</Col>
+                                </Row>
+
+                                <FormGroup>
+                                    <Label>Jumlah Bayar</Label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        value={formatCurrency(paymentAmount)}
+                                        onChange={(e) => setPaymentAmount(formatNumber(e.target.value) || 0)}
+                                        max={selectedStudent.invoice?.amount}
+                                        min={1}
+                                    />
+                                    {paymentAmount < (selectedStudent.invoice?.amount || 0) && paymentAmount > 0 && (
+                                        <div className="text-warning mt-1">
+                                            <Icon name="info-fill" /> Sisa tagihan baru: {formatCurrency((selectedStudent.invoice?.amount || 0) - paymentAmount)}
+                                        </div>
+                                    )}
+                                    {paymentAmount > (selectedStudent.invoice?.amount || 0) && (
+                                        <div className="text-danger mt-1">
+                                            Jumlah bayar tidak boleh melebihi total tagihan.
+                                        </div>
+                                    )}
+                                </FormGroup>
+                            </div>
+                        )}
+                    </ModalBody>
+                    <ModalFooter>
+                        {selectedStudent && selectedStudent.invoice?.status === 'PAID' && (
+                            <Button
+                                color="success"
+                                onClick={() => handleDownloadReceipt(selectedStudent.invoice?.id)}
+                                title="Download Bukti Pembayaran"
+                            >
+                                <i className="ri-download-line"></i> Download Bukti
+                            </Button>
+                        )}
+                        <Button
+                            color="primary"
+                            onClick={handleCashPayment}
+                            disabled={!selectedStudent || paymentAmount <= 0 || paymentAmount > (selectedStudent.invoice?.amount || 0)}
+                        >
+                            Catat Pembayaran
+                        </Button>
+                        <Button color="secondary" onClick={toggleModal}>Batal</Button>
+                    </ModalFooter>
+                </Modal>
+
+                <Modal isOpen={modal.detail} toggle={() => setModal({ ...modal, detail: !modal.detail })} size="lg">
+                    <ModalHeader toggle={() => setModal({ ...modal, detail: !modal.detail })}>Detail Transaksi Pembayaran</ModalHeader>
+                    <ModalBody>
+                        {selectedPayment && (
+                            <div className="table-responsive">
+                                <table className="table table-bordered table-striped">
+                                    <tbody>
+                                        <tr>
+                                            <th style={{ width: '35%' }}>ID Transaksi</th>
+                                            <td>{selectedPayment.transaction_id || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Waktu Transaksi</th>
+                                            <td>{selectedPayment.transaction_time || selectedPayment.created_at}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Siswa</th>
+                                            <td>{selectedPayment.name}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Invoice</th>
+                                            <td>{selectedPayment.reference}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Metode Pembayaran</th>
+                                            <td>
+                                                <Badge
+                                                    color={selectedPayment.method === 1 ? 'info' : 'warning'}
+                                                >
+                                                    {selectedPayment.method === 1 ? 'Cash' : 'Midtrans'}
+                                                </Badge>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Status</th>
+                                            <td>
+                                                <Badge
+                                                    pill
+                                                    color={getPaymentStatusColor(selectedPayment.status)}
+                                                >
+                                                    {getPaymentStatusText(selectedPayment.status)}
+                                                </Badge>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Jumlah</th>
+                                            <td>
+                                                <span className="fw-bold text-success">
+                                                    {formatCurrency(selectedPayment.amount)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="secondary" onClick={() => setModal({ ...modal, detail: false })}>Tutup</Button>
+                    </ModalFooter>
+                </Modal>
+            </Content>
+        </React.Fragment>
+    );
+};
+
+export default Treasure;

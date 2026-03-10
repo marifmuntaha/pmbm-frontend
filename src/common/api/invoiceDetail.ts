@@ -1,0 +1,33 @@
+import { apiCore } from "@/common/api/core";
+import type { ApiResponseInterface, InvoiceDetailType } from "@/types";
+
+const api = new apiCore()
+
+async function get<T>(params: Record<string, any> = {}, notification: boolean = false): Promise<T[]> {
+    const baseUrl = '/invoice/detail'
+    const result = await api.get<T[]>(baseUrl, params, notification)
+        .then((value: ApiResponseInterface<T[]>) => value.result);
+    return result !== undefined ? result : [];
+}
+
+async function store(params: Record<string, any> = {}, notification: boolean = false): Promise<ApiResponseInterface<InvoiceDetailType> | void> {
+    const baseUrl = '/invoice/detail'
+    return await api.create<InvoiceDetailType>(baseUrl, params, notification).then((resp) => resp);
+}
+
+async function show(params: Record<string, any> = {}) {
+    const baseUrl = `/invoice/detail/${params.id}`
+    return await api.get<InvoiceDetailType>(baseUrl, params, true).then((resp) => resp.result);
+}
+
+async function update(params: Record<string, any> = {}, notification: boolean = true) {
+    const baseUrl = `/invoice/detail/${params.id}`
+    return await api.update<InvoiceDetailType>(baseUrl, params, notification).then((resp) => resp);
+}
+
+async function destroy(id: number | undefined) {
+    const baseUrl = `/invoice/detail/${id}`
+    return await api.delete(baseUrl, true).then((resp) => resp);
+}
+
+export { get, store, show, update, destroy }
