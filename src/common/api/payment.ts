@@ -35,4 +35,9 @@ async function cash(params: Record<string, any> = {}) {
     return await api.create<any>(baseUrl, params, true).then((resp) => resp);
 }
 
-export { get, store, show, update, destroy, cash }
+async function getActiveGateway() {
+    const baseUrl = '/payment/active-gateway'
+    return await api.get<any>(baseUrl, {}, false).then((resp) => resp.result);
+}
+
+export { get, store, show, update, destroy, cash, getActiveGateway }

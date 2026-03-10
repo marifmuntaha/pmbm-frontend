@@ -10,7 +10,7 @@ import { useAuthContext } from "@/common/hooks/useAuthContext";
 import { get as getInvoice } from "@/common/api/invoice";
 import type { InvoiceType } from "@/types";
 import { formatCurrency, getStatusInvoice } from "@/helpers";
-import { store as storePayment } from "@/common/api/payment";
+import { store as storePayment, getActiveGateway } from "@/common/api/payment";
 import { downloadAllReceipts } from "@/common/api/payment/receipt";
 import type { PaymentModalType } from "@/types/model/payment";
 
@@ -88,15 +88,39 @@ const Student = () => {
         }
     }, [loadData]);
 
+    const [activeGateway, setActiveGateway] = useState<any>(null);
+
+    // Load active gateway settings
+    useEffect(() => {
+        getActiveGateway().then((resp: any) => {
+            setActiveGateway(resp);
+        });
+    }, []);
+
     // Load Midtrans Snap script dynamically
     useEffect(() => {
+        if (!activeGateway) return;
+
         // Check if script already exists
         const existingScript = document.querySelector('script[src*="snap.midtrans.com"]');
-        if (existingScript) return;
+        if (existingScript) {
+            // If mode changed, we might need to reload, but for now let's just use what's there
+            // or remove and re-add if the src doesn't match the current mode
+            const currentSrc = existingScript.getAttribute('src');
+            const expectedSrc = activeGateway.mode === 2
+                ? 'https://app.midtrans.com/snap/snap.js'
+                : 'https://app.sandbox.midtrans.com/snap/snap.js';
+
+            if (currentSrc === expectedSrc) return;
+            document.body.removeChild(existingScript);
+        }
 
         const script = document.createElement('script');
-        script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-        script.setAttribute('data-client-key', 'SB-Mid-client-XXXXXXXXXXXX');
+        script.src = activeGateway.mode === 2
+            ? 'https://app.midtrans.com/snap/snap.js'
+            : 'https://app.sandbox.midtrans.com/snap/snap.js';
+
+        script.setAttribute('data-client-key', activeGateway.client_key);
         script.async = true;
 
         script.onload = () => {
@@ -116,7 +140,7 @@ const Student = () => {
                 document.body.removeChild(scriptToRemove);
             }
         };
-    }, []);
+    }, [activeGateway]);
 
     useEffect(() => {
         getVerification({ userId: user?.id }).then((resp) => {
