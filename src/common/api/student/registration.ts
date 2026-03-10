@@ -54,4 +54,10 @@ async function downloadRegistrationProof(): Promise<void> {
     }
 }
 
-export { downloadRegistrationProof };
+async function sendWhatsAppRegistrationProof(userId: number | string): Promise<any> {
+    const api = new apiCore();
+    const frontendUrl = `${window.location.protocol}//${window.location.host}`;
+    return api.create(`/student/${userId}/send-whatsapp`, { frontend_url: frontendUrl }, false);
+}
+
+export { downloadRegistrationProof, sendWhatsAppRegistrationProof };

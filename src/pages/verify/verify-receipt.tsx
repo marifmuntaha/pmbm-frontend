@@ -5,7 +5,8 @@ import { Block, Icon } from "@/components";
 import { Card, Badge, Spinner } from "reactstrap";
 import { verifyReceipt } from "@/common/api/payment/receipt";
 import { formatCurrency } from "@/helpers";
-import moment from "moment";
+import moment from "moment/moment";
+import "moment/locale/id";
 
 type ReceiptDataType = {
     valid: boolean;
@@ -176,8 +177,8 @@ const VerifyReceipt = () => {
                                                                 </label>
                                                                 <div className="form-control-wrap">
                                                                     <p className="mb-0">
-                                                                        {moment(receipt.payment.transaction_time).format(
-                                                                            "DD MMM YYYY, HH:mm"
+                                                                        {moment(receipt.payment.transaction_time).locale('id').format(
+                                                                            "DD MMMM YYYY, HH:mm"
                                                                         )}
                                                                     </p>
                                                                 </div>
@@ -201,7 +202,7 @@ const VerifyReceipt = () => {
                                                             <div className="alert alert-info">
                                                                 <Icon name="info-fill" /> Bukti pembayaran ini di-generate
                                                                 pada{" "}
-                                                                {moment(receipt.generated_at).format(
+                                                                {moment(receipt.generated_at).locale('id').format(
                                                                     "DD MMMM YYYY, HH:mm:ss"
                                                                 )}{" "}
                                                                 WIB

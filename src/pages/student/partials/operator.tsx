@@ -16,17 +16,20 @@ import {
 } from "@/components";
 import type { ColumnType, StudentOperatorType } from "@/types";
 import { studentTreasurer } from "@/common/api/student";
+import { sendWhatsAppRegistrationProof } from "@/common/api/student/registration";
 import moment from "moment/moment";
 import { ButtonGroup, Spinner } from "reactstrap";
 import { destroy as destroyYear } from "@/common/api/master/year";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const StudentOperator = () => {
     const year = useYearContext()
     const institution = useInstitutionContext()
     const navigate = useNavigate()
     const [sm, updateSm] = useState(false)
-    const [loading, setLoading] = useState<boolean | number | undefined>(false)
+    const [loading, setLoading] = useState<boolean | number | string | undefined>(false)
+    const [sendingWa, setSendingWa] = useState<number | string | null>(null)
     const [loadData, setLoadData] = useState(true)
     const [students, setStudents] = useState<StudentOperatorType[]>([])
     const Column: ColumnType<StudentOperatorType>[] = [
@@ -69,6 +72,23 @@ const StudentOperator = () => {
                 <ButtonGroup size="sm">
                     <Button outline color="warning" onClick={() => navigate(`/data-pendaftar/${row.userId}/ubah`)}>
                         <Icon name="pen" />
+                    </Button>
+                    <Button outline color="success" onClick={async () => {
+                        setSendingWa(row.userId as string | number);
+                        try {
+                            const resp = await sendWhatsAppRegistrationProof(row.userId as string | number);
+                            if (resp.status === 'success') {
+                                toast.success(resp.statusMessage || "WhatsApp berhasil dikirim");
+                            } else {
+                                toast.error(resp.statusMessage || "Gagal mengirim WhatsApp");
+                            }
+                        } catch (err: any) {
+                            toast.error(err.message || "Terjadi kesalahan");
+                        } finally {
+                            setSendingWa(null);
+                        }
+                    }}>
+                        {sendingWa === row.userId ? <Spinner size="sm" /> : <Icon name="whatsapp" />}
                     </Button>
                     <Button outline color="danger" onClick={async () => {
                         setLoading(row?.id);
