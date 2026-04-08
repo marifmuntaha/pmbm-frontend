@@ -754,60 +754,55 @@ const VerificationForm = ({ formData }: StudentFormProps) => {
                                     }
                                     const originResp = await storeOrigin(originFormData, false)
                                     if (originResp !== undefined) {
-                                        const { achievements } = formData
-                                        const achievementResp = achievements?.map(async (achievement) => {
-                                            const achievementFormData: Partial<StudentAchievementType> = {
-                                                ...achievement,
-                                                userId: userResp?.id,
-                                            }
-                                            return await storeAchievement(achievementFormData, false)
-                                        })
-                                        if (achievementResp) {
-                                            const { file } = formData
-                                            const FileFormData: Partial<StudentFileFormType> = {
-                                                ...file,
-                                                userId: userResp?.id,
-                                                imagePhoto: file?.imagePhoto && typeof file?.imagePhoto !== 'string' && file?.imagePhoto.length > 0 ? file.imagePhoto[0] : undefined,
-                                                imageKk: file?.imageKk && typeof file?.imageKk !== 'string' && file?.imageKk.length > 0 ? file.imageKk[0] : undefined,
-                                                imageKtp: file?.imageKtp && typeof file?.imageKtp !== 'string' && file?.imageKtp.length > 0 ? file.imageKtp[0] : undefined,
-                                                imageAkta: file?.imageAkta && typeof file?.imageAkta !== 'string' && file?.imageAkta.length > 0 ? file.imageAkta[0] : undefined,
-                                                imageIjazah: file?.imageIjazah && typeof file?.imageIjazah !== 'string' && file?.imageIjazah.length > 0 ? file.imageIjazah[0] : undefined,
-                                                imageSkl: file?.imageSkl && typeof file?.imageSkl !== 'string' && file?.imageSkl.length > 0 ? file.imageSkl[0] : undefined,
-                                                imageKip: file?.imageKip && typeof file?.imageKip !== 'string' && file?.imageKip.length > 0 ? file.imageKip[0] : undefined,
-                                            }
-                                            const fileResp = await storeFile(FileFormData, false)
-                                            if (fileResp !== undefined) {
-                                                const verificationFormData: Partial<StudentVerificationType> = {
-                                                    ...values,
+                                        const { achievements } = formData;
+                                        if (achievements && achievements.length > 0) {
+                                            await Promise.all(achievements.map(async (achievement: StudentAchievementType) => {
+                                                const achievementFormData: Partial<StudentAchievementType> = {
+                                                    ...achievement,
                                                     userId: userResp?.id,
-                                                    twins: values.twins.value,
-                                                    graduate: values.graduate.value,
-                                                    domicile: values.domicile.value,
-                                                    student: values.student.value,
-                                                    teacherSon: values.teacherSon.value,
-                                                    sibling: values.sibling.value,
-                                                    siblingInstitution: values.siblingInstitution?.value
                                                 }
-                                                const verificationResp = await storeVerification(verificationFormData, false)
-                                                if (verificationResp !== undefined) {
-                                                    RToast('Data Pendaftar berhasil ditambahkan', 'success')
-                                                } else {
-                                                    await destroyFile(fileResp.id, false)
-                                                    await destroyOrigin(originResp.id, false)
-                                                    await destroyProgram(programResp.id, false)
-                                                    await destroyAddress(addressResp.id, false)
-                                                    await destroyParent(parentResp.id, false)
-                                                    await destroyPersonal(personalResp.id, false)
-                                                    await destroyUser(userResp.id, false)
-                                                }
+                                                return await storeAchievement(achievementFormData, false)
+                                            }))
+                                        }
+                                        const { file } = formData
+                                        const FileFormData: any = {
+                                            userId: userResp?.id,
+                                            ...file
+                                        }
+
+                                        const fileFields = ['imagePhoto', 'imageKk', 'imageKtp', 'imageAkta', 'imageIjazah', 'imageSkl', 'imageKip'];
+                                        fileFields.forEach(field => {
+                                            if (file && (file as any)[field] && typeof (file as any)[field] !== 'string' && (file as any)[field].length > 0) {
+                                                FileFormData[field] = (file as any)[field][0];
+                                            } else {
+                                                delete FileFormData[field];
                                             }
-                                        } else {
-                                            await destroyOrigin(originResp.id, false)
-                                            await destroyProgram(programResp.id, false)
-                                            await destroyAddress(addressResp.id, false)
-                                            await destroyParent(parentResp.id, false)
-                                            await destroyPersonal(personalResp.id, false)
-                                            await destroyUser(userResp.id, false)
+                                        });
+                                        const fileResp = await storeFile(FileFormData, false)
+                                        if (fileResp !== undefined) {
+                                            const verificationFormData: Partial<StudentVerificationType> = {
+                                                ...values,
+                                                userId: userResp?.id,
+                                                twins: values.twins.value,
+                                                graduate: values.graduate.value,
+                                                domicile: values.domicile.value,
+                                                student: values.student.value,
+                                                teacherSon: values.teacherSon.value,
+                                                sibling: values.sibling.value,
+                                                siblingInstitution: values.siblingInstitution?.value
+                                            }
+                                            const verificationResp = await storeVerification(verificationFormData, false)
+                                            if (verificationResp !== undefined) {
+                                                RToast('Data Pendaftar berhasil ditambahkan', 'success')
+                                            } else {
+                                                await destroyFile(fileResp.id, false)
+                                                await destroyOrigin(originResp.id, false)
+                                                await destroyProgram(programResp.id, false)
+                                                await destroyAddress(addressResp.id, false)
+                                                await destroyParent(parentResp.id, false)
+                                                await destroyPersonal(personalResp.id, false)
+                                                await destroyUser(userResp.id, false)
+                                            }
                                         }
                                     } else {
                                         await destroyProgram(programResp.id, false)
