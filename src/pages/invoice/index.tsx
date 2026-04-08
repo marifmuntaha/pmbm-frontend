@@ -86,14 +86,19 @@ const Invoice = () => {
                 <ButtonGroup size="sm">
                     {row.invoice ? row.invoice.status !== 'PAID' && (
                         (
-                            <Button outline color="warning" onClick={() => {
-                                setUser({ id: row.userId, address: row.address, period: row.period, verification: row.verification })
-                                setInvoice(row.invoice)
-                                setFormMode('edit')
-                                setModal({ ...modal, form: true });
-                            }}>
-                                <Icon name="pen" />
-                            </Button>
+                            <React.Fragment>
+                                <Button outline color="warning" onClick={() => {
+                                    setUser({ id: row.userId, address: row.address, period: row.period, verification: row.verification })
+                                    setInvoice(row.invoice)
+                                    setFormMode('edit')
+                                    setModal({ ...modal, form: true });
+                                }}>
+                                    <Icon name="pen" />
+                                </Button>
+                                <Button outline color="info" onClick={() => navigate(`/data-tagihan/${row.invoice?.id}/lihat`)}>
+                                    <Icon name="eye" />
+                                </Button>
+                            </React.Fragment>
                         )
                     ) : (
                         <Button outline color="danger" onClick={() => {
@@ -102,9 +107,6 @@ const Invoice = () => {
                             <Icon name="reload" />
                         </Button>
                     )}
-                    <Button outline color="info" onClick={() => navigate(`/data-tagihan/${row.invoice?.id}/lihat`)}>
-                        <Icon name="eye" />
-                    </Button>
                     {row.invoice && (
                         <Button outline color="success" onClick={() => {
                             sendWhatsapp(row.invoice?.id).then(() => {

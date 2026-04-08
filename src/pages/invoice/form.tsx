@@ -147,6 +147,7 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
                                 <td className="text-end">Harga</td>
                                 <td className="text-end">Potongan</td>
                                 <td className="text-end">Jumlah</td>
+                                <td className="text-center" style={{ width: '50px' }}>Aksi</td>
                             </tr>
                         </thead>
                         <tbody>
@@ -242,10 +243,24 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
                                         </div>
                                     </td>
                                     <td className="text-end">{formatCurrency(item.amount)}</td>
+                                    <td className="text-center">
+                                        <Button
+                                            size="sm"
+                                            color="danger"
+                                            outline
+                                            onClick={() => {
+                                                setInvoiceDetail((prev) =>
+                                                    prev.filter((_, i) => i !== idx)
+                                                );
+                                            }}
+                                        >
+                                            <Icon name="trash" />
+                                        </Button>
+                                    </td>
                                 </tr>
                             ))}
                             <tr>
-                                <td className="fw-bold text-end" colSpan={3}>TOTAL :</td>
+                                <td className="fw-bold text-end" colSpan={4}>TOTAL :</td>
                                 <td className="fw-bold text-end">{formatCurrency(amount)}</td>
                             </tr>
                         </tbody>
