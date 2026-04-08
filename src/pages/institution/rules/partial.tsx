@@ -5,6 +5,7 @@ import { Icon, Row } from "@/components";
 import { store, update } from "@/common/api/master/rule";
 import type { RuleType } from "@/types";
 import { RToast } from "@/components/toast";
+import {useAuthContext} from "@/common/hooks/useAuthContext.ts";
 
 interface PartialProps {
     modal: boolean;
@@ -15,6 +16,7 @@ interface PartialProps {
 }
 
 const Partial: React.FC<PartialProps> = ({ modal, setModal, rule, setRule, setLoadData }) => {
+    const {user} = useAuthContext();
     const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<RuleType>();
 
     useEffect(() => {
@@ -31,10 +33,8 @@ const Partial: React.FC<PartialProps> = ({ modal, setModal, rule, setRule, setLo
         try {
             if (rule.id) {
                 await update({ ...data, id: rule.id });
-                RToast("Aturan berhasil diperbarui", "success");
             } else {
-                await store(data);
-                RToast("Aturan berhasil ditambahkan", "success");
+                await store({...data, institutionId: user?.institutionId});
             }
             setLoadData(true);
             toggle();

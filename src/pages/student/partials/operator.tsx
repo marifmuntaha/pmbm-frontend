@@ -18,7 +18,7 @@ import type { ColumnType, StudentOperatorType } from "@/types";
 import { studentTreasurer } from "@/common/api/student";
 import { sendWhatsAppRegistrationProof } from "@/common/api/student/registration";
 import moment from "moment/moment";
-import { ButtonGroup, Spinner } from "reactstrap";
+import { Badge, ButtonGroup, Spinner } from "reactstrap";
 import { destroy as destroyYear } from "@/common/api/master/year";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -62,6 +62,16 @@ const StudentOperator = () => {
             name: "Boarding",
             selector: (row) => row?.boarding,
             sortable: false,
+        },
+        {
+            name: "Status",
+            selector: (row) => row?.verification?.id,
+            sortable: false,
+            cell: (row) => (
+                <Badge color={row?.verification !== null ? "success" : "warning"}>
+                    {row?.verification !== null ? "Terverifikasi" : "Pending"}
+                </Badge>
+            ),
         },
         {
             name: "Aksi",
