@@ -207,6 +207,17 @@ const menuOperator = [
         text: "Data Pengguna",
         link: "/data-pengguna",
     },
+    {
+        icon: "setting",
+        text: "Pengaturan",
+        subMenu: [
+            {
+                text: "Whatsapp",
+                link: "/pengaturan/whatsapp",
+            }
+        ],
+
+    }
 ];
 
 const menuBoarding = [

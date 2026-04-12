@@ -74,6 +74,7 @@ const ScrollToTop: React.FC<ScrollToTopProps> = ({ children }) => {
 import SystemLog from "@/pages/dashboard/log";
 import IntegrationTest from "@/pages/dashboard/test";
 import AnnouncementPage from "@/pages/announcement";
+import Whatsapp from "@/pages/setting/whatsapp";
 
 const Router: React.FC = () => {
     return (
@@ -91,6 +92,7 @@ const Router: React.FC = () => {
                                 <Route element={<AdminRoute roles={[1, 2]} />}>
                                     <Route path="/data-pengguna" element={<User />} />
                                     <Route path="/pengumuman" element={<AnnouncementPage />} />
+                                    <Route path="/pengaturan/whatsapp" element={<Whatsapp/>}/>
                                 </Route>
                                 <Route element={<OperatorRoute />}>
                                     <Route path="/master-data/program-lembaga" element={<InstitutionProgram />} />
