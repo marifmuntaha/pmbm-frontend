@@ -8,8 +8,8 @@ import type { OptionsType, WhatsappType } from "@/types";
 import {useAuthContext} from "@/common/hooks/useAuthContext";
 
 interface PartialProps {
-    modal: boolean;
-    setModal: (modal: boolean) => void;
+    modal: { partial: false, login: false };
+    setModal: (modal: { partial: false, login: false }) => void;
     whatsapp: WhatsappType;
     setWhatsapp: (whatsapp: WhatsappType) => void;
     setLoadData: (loadData: boolean) => void;
@@ -63,7 +63,10 @@ const Partial = ({ modal, setModal, whatsapp, setWhatsapp, setLoadData }: Partia
         reset();
     }
     const toggle = () => {
-        setModal(false);
+        setModal({
+            partial: false,
+            login: false
+        });
         handleReset();
     };
 
@@ -84,7 +87,7 @@ const Partial = ({ modal, setModal, whatsapp, setWhatsapp, setLoadData }: Partia
     }, []);
 
     return (
-        <Modal isOpen={modal} toggle={toggle}>
+        <Modal isOpen={modal.partial} toggle={toggle}>
             <ModalHeader toggle={toggle} close={
                 <button className="close" onClick={toggle}>
                     <Icon name="cross" />

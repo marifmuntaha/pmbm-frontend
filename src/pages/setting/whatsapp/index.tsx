@@ -15,12 +15,16 @@ import {
 import { get as getWhatsapp, destroy as destroyWhatsapp } from "@/common/api/whatsapp";
 import type { ColumnType, WhatsappType } from "@/types";
 import Partial from "./partial";
+import Login from "./login";
 
 const Whatsapp: React.FC = () => {
     const [sm, updateSm] = useState<boolean>(false);
     const [loadData, setLoadData] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean | number | undefined>(false);
-    const [modal, setModal] = useState<boolean>(false);
+    const [modal, setModal] = useState<any>({
+        partial: false,
+        login: false,
+    });
     const [whatsapps, setWhatsapps] = useState<WhatsappType[]>([]);
     const [whatsapp, setWhatsapp] = useState<WhatsappType>({
         id: undefined,
@@ -76,7 +80,10 @@ const Whatsapp: React.FC = () => {
                 <ButtonGroup size="sm">
                     <Button outline color="info" onClick={() => {
                         setWhatsapp(row);
-                        setModal(true);
+                        setModal({
+                            partial: false,
+                            login: true,
+                        })
                     }}>
                         <Icon name="scan" />
                     </Button>
@@ -128,7 +135,7 @@ const Whatsapp: React.FC = () => {
                                         <ul className="nk-block-tools g-3">
                                             <li>
                                                 <Button color="primary" size="sm" outline className="btn-white"
-                                                        onClick={() => setModal(true)}>
+                                                        onClick={() => setModal({partial: true, login: false})}>
                                                     <Icon name="plus" />
                                                     <span>TAMBAH</span>
                                                 </Button>
@@ -143,6 +150,7 @@ const Whatsapp: React.FC = () => {
                         <ReactDataTable data={whatsapps} columns={Column} pagination progressPending={loadData} />
                     </PreviewCard>
                     <Partial modal={modal} setModal={setModal} whatsapp={whatsapp} setWhatsapp={setWhatsapp} setLoadData={setLoadData} />
+                    <Login modal={modal} setModal={setModal} whatsapp={whatsapp} setWhatsapp={setWhatsapp}/>
                 </Block>
             </Content>
         </React.Fragment>

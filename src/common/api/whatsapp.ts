@@ -31,4 +31,9 @@ async function destroy(id: number | undefined, notification: boolean = true) {
     return await api.delete(baseUrl, notification).then((resp) => resp);
 }
 
-export { get, store, show, update, destroy }
+async function login(params: Record<string, any> = {}, notification = false) {
+    const baseUrl = `/whatsapp/login`
+    return await api.create<any>(baseUrl, params, notification)
+        .then((resp: ApiResponseInterface<any>) => resp.result);
+}
+export { get, store, show, update, destroy, login }
