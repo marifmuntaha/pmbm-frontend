@@ -103,7 +103,7 @@ const Partial = ({ modal, setModal, whatsapp, setWhatsapp, setLoadData }: Partia
                             <Controller
                                 control={control}
                                 name="institutionId"
-                                rules={{ required: "ID Lembaga tidak boleh kosong" }}
+                                rules={{ required: user?.role === 1 ? false : "ID Lembaga tidak boleh kosong" }}
                                 render={({ field: {value, onChange} }) => (
                                     <React.Fragment>
                                         <RSelect

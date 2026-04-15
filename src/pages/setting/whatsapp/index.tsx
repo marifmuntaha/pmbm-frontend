@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Badge, ButtonGroup, Spinner } from "reactstrap";
+import {Badge, ButtonGroup, Spinner, Tooltip} from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -16,11 +16,19 @@ import { get as getWhatsapp, destroy as destroyWhatsapp } from "@/common/api/wha
 import type { ColumnType, WhatsappType } from "@/types";
 import Partial from "./partial";
 import Login from "./login";
+import {useAuthContext} from "@/common/hooks/useAuthContext";
 
 const Whatsapp: React.FC = () => {
+    const { user } = useAuthContext();
     const [sm, updateSm] = useState<boolean>(false);
     const [loadData, setLoadData] = useState<boolean>(true);
-    const [loading, setLoading] = useState<boolean | number | undefined>(false);
+    const [loading, setLoading] = useState<boolean | number | string | undefined>(false);
+    const [tooltip, setTooltip] = useState({
+        scan: false,
+        destroy: false,
+        reload: false,
+        logout: false
+    });
     const [modal, setModal] = useState<any>({
         partial: false,
         login: false,
@@ -38,6 +46,53 @@ const Whatsapp: React.FC = () => {
         await destroyWhatsapp(id)
             .then(() => setLoadData(true))
             .finally(() => setLoading(false));
+    }
+    const buttonAction = (data: WhatsappType) => {
+        const {results} = data.status;
+        if (results.state === "disconnected") {
+            return (
+                <ButtonGroup size="sm">
+                    <Button outline color="info" id="scan" onClick={() => {
+                        setWhatsapp(data);
+                        setModal({
+                            partial: false,
+                            login: true,
+                        })
+                    }}>
+                        <Icon name="scan" />
+                    </Button>
+                    <Tooltip placement="top" isOpen={tooltip.scan} target="scan" toggle={() => setTooltip({...tooltip, scan: !tooltip.scan})}>
+                        Scan QRCode Whatsapp
+                    </Tooltip>
+                    <Button outline color="danger" id="destroy" onClick={() => handleDestroy(data?.id)}>
+                        {loading === data.id ? <Spinner size="sm" /> : <Icon name="trash" />}
+                    </Button>
+                    <Tooltip placement="top" isOpen={tooltip.destroy} target="destroy" toggle={() => setTooltip({...tooltip, destroy: !tooltip.destroy})}>
+                        Hapus Perangkat
+                    </Tooltip>
+                </ButtonGroup>
+            )
+        }
+        if (results.state === "connected" || results.state === "logged_in") {
+            return (
+                <ButtonGroup size="sm">
+                    <Button outline color="info" id="reload" onClick={() => {
+                        alert("whatsapp terhubung")
+                    }}>
+                        <Icon name="reload" />
+                    </Button>
+                    <Tooltip placement="top" isOpen={tooltip.reload} target="reload" toggle={() => setTooltip({...tooltip, reload: !tooltip.reload})}>
+                        Hubungkan Ulang Whatsapp
+                    </Tooltip>
+                    <Button outline color="danger" id="destroy" onClick={() => handleDestroy(data?.id)}>
+                        {loading === data.id ? <Spinner size="sm" /> : <Icon name="trash" />}
+                    </Button>
+                    <Tooltip placement="top" isOpen={tooltip.destroy} target="destroy" toggle={() => setTooltip({...tooltip, destroy: !tooltip.destroy})}>
+                        Hapus Perangkat
+                    </Tooltip>
+                </ButtonGroup>
+            )
+        }
     }
 
     const Column: ColumnType<WhatsappType>[] = [
@@ -62,48 +117,47 @@ const Whatsapp: React.FC = () => {
             ),
         },
         {
-            name: "status",
+            name: "Status",
             selector: (row) => row.status,
             sortable: false,
-            cell: (row) => (
-                <Badge pill color={row.status ? 'success' : 'danger'}>
-                    {row.status ? 'Ya' : 'Tidak'}
-                </Badge>
-            ),
+            cell: (row) => {
+                const {results} = row.status
+                if (results.state === "disconnected") {
+                    return <Badge pill color='danger'>Tidak Terhubung</Badge>
+                }
+                if (results.is_connected === true && results.is_logged_in === false) {
+                    return <Badge pill color='warning'>Perangkat Logout</Badge>
+                }
+                if (results.state === "logged_in") {
+                    return <Badge pill color='success'>{results.jid}</Badge>
+                }
+            }
         },
         {
             name: "Aksi",
             selector: (row) => row?.id,
             sortable: false,
             width: "150px",
-            cell: (row) => (
-                <ButtonGroup size="sm">
-                    <Button outline color="info" onClick={() => {
-                        setWhatsapp(row);
-                        setModal({
-                            partial: false,
-                            login: true,
-                        })
-                    }}>
-                        <Icon name="scan" />
-                    </Button>
-                    <Button outline color="warning" onClick={() => {
-                        setWhatsapp(row);
-                        setModal(true);
-                    }}>
-                        <Icon name="pen" />
-                    </Button>
-                    <Button outline color="danger" onClick={() => handleDestroy(row?.id)}>
-                        {loading === row.id ? <Spinner size="sm" /> : <Icon name="trash" />}
-                    </Button>
-                </ButtonGroup>
-            ),
+            cell: (row) => buttonAction(row),
         },
     ];
 
+    const paramsFetch = () => {
+        if (user?.role !== 1 ) {
+            return {
+                type: 'datatable',
+                institutionId: user?.institutionId
+            }
+        } else {
+            return {
+                type: 'datatable',
+            }
+        }
+    }
+
     useEffect(() => {
         if (loadData) {
-            getWhatsapp<WhatsappType>({ type: 'datatable' })
+            getWhatsapp<WhatsappType>(paramsFetch())
                 .then((resp) => setWhatsapps(resp))
                 .finally(() => setLoadData(false));
         }
@@ -112,7 +166,7 @@ const Whatsapp: React.FC = () => {
     return (
         <React.Fragment>
             <Head title="Data Perangkat Whatsapp" />
-            <Content page="component">
+            <Content>
                 <Block size="lg">
                     <BlockHead>
                         <BlockBetween>
@@ -135,7 +189,7 @@ const Whatsapp: React.FC = () => {
                                         <ul className="nk-block-tools g-3">
                                             <li>
                                                 <Button color="primary" size="sm" outline className="btn-white"
-                                                        onClick={() => setModal({partial: true, login: false})}>
+                                                    onClick={() => setModal({ partial: true, login: false })}>
                                                     <Icon name="plus" />
                                                     <span>TAMBAH</span>
                                                 </Button>
@@ -150,7 +204,7 @@ const Whatsapp: React.FC = () => {
                         <ReactDataTable data={whatsapps} columns={Column} pagination progressPending={loadData} />
                     </PreviewCard>
                     <Partial modal={modal} setModal={setModal} whatsapp={whatsapp} setWhatsapp={setWhatsapp} setLoadData={setLoadData} />
-                    <Login modal={modal} setModal={setModal} whatsapp={whatsapp} setWhatsapp={setWhatsapp}/>
+                    <Login modal={modal} setModal={setModal} whatsapp={whatsapp} setWhatsapp={setWhatsapp} />
                 </Block>
             </Content>
         </React.Fragment>

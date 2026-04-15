@@ -19,7 +19,6 @@ import { studentTreasurer } from "@/common/api/student";
 import { sendWhatsAppRegistrationProof } from "@/common/api/student/registration";
 import moment from "moment/moment";
 import { Badge, ButtonGroup, Spinner } from "reactstrap";
-import { destroy as destroyYear } from "@/common/api/master/year";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -37,6 +36,7 @@ const StudentOperator = () => {
             name: "Nama",
             selector: (row) => row?.name,
             sortable: false,
+            width: "350px"
         },
         {
             name: "Tempat Lahir",
@@ -102,9 +102,7 @@ const StudentOperator = () => {
                     </Button>
                     <Button outline color="danger" onClick={async () => {
                         setLoading(row?.id);
-                        await destroyYear(row?.id)
-                            .then(() => setLoadData(true))
-                            .finally(() => setLoading(false));
+                        alert('dihapus')
                     }}>
                         {loading === row.id ? <Spinner size="sm" /> : <Icon name="trash" />}
                     </Button>

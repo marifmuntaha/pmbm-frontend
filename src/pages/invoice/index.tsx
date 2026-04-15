@@ -53,6 +53,7 @@ const Invoice = () => {
             name: "Nama",
             selector: (row) => row.name,
             sortable: false,
+            width: "350px"
         },
         {
             name: "Wali",

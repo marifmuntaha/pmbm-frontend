@@ -36,4 +36,5 @@ async function login(params: Record<string, any> = {}, notification = false) {
     return await api.create<any>(baseUrl, params, notification)
         .then((resp: ApiResponseInterface<any>) => resp.result);
 }
+
 export { get, store, show, update, destroy, login }

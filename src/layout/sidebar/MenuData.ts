@@ -74,6 +74,17 @@ const menuAdmin = [
         link: "/test-integrasi",
     },
     {
+        icon: "setting",
+        text: "Pengaturan",
+        subMenu: [
+            {
+                text: "Whatsapp",
+                link: "/pengaturan/whatsapp",
+            }
+        ],
+
+    },
+    {
         icon: "file-text",
         text: "Log Sistem",
         link: "/log-sistem",

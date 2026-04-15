@@ -278,14 +278,19 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
                                         <td>Pendaftar punya saudara kembar di {institution?.surname} dengan Nama {user.verification.twinsName}</td>
                                     </tr>
                                 )}
+                                {user.verification.graduate === 1 && (
+                                    <tr>
+                                        <td>Pendaftar alumni dari {institutionData?.find((item) => institution?.id && item.id === institution.id - 1)?.surname}</td>
+                                    </tr>
+                                )}
                                 {user.verification.domicile === 1 && (
                                     <tr>
                                         <td>Pendaftar berdomisili di Menganti</td>
                                     </tr>
                                 )}
-                                {user.verification.graduate === 1 && (
+                                {user.verification.student === 1 && (
                                     <tr>
-                                        <td>Pendaftar alumni dari {institutionData?.find((item) => institution?.id && item.id === institution.id - 1)?.surname}</td>
+                                        <td>Santri PONPES Darul Hikmah Menganti</td>
                                     </tr>
                                 )}
                                 {user.verification.teacherSon === 1 && (
