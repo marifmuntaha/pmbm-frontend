@@ -8,6 +8,7 @@ import {get as getInstitution} from "@/common/api/institution";
 import {get as getInstitutionPrograms} from "@/common/api/institution/program";
 import {get as getPeriod} from "@/common/api/institution/period";
 import moment from "moment";
+import {STUDENT_STATUS} from "@/common/constants";
 
 interface StudentProgramFormProps {
     methods: UseFormReturn<StudentProgramType>
@@ -68,7 +69,7 @@ const StudentProgramForm = ({methods, user}: StudentProgramFormProps) => {
 
             <Row className="gy-1">
                 {user?.role === 4 && (
-                    <div className="form-group col-md-4">
+                    <div className="form-group col-md-3">
                         <label className="form-label" htmlFor="institutionId">Lembaga</label>
                         <div className="form-control-wrap">
                             <Controller
@@ -93,7 +94,7 @@ const StudentProgramForm = ({methods, user}: StudentProgramFormProps) => {
                     </div>
                 )}
                 {user?.role === 2 && (
-                    <div className="form-group col-md-4">
+                    <div className="form-group col-md-3">
                         <label className="form-label" htmlFor="periodId">Gelombang</label>
                         <div className="form-control-wrap">
                             <Controller
@@ -117,7 +118,7 @@ const StudentProgramForm = ({methods, user}: StudentProgramFormProps) => {
                         </div>
                     </div>
                 )}
-                <div className="form-group col-md-4">
+                <div className="form-group col-md-3">
                     <label className="form-label" htmlFor="programId">Program Madrasah</label>
                     <div className="form-control-wrap">
                         <Controller
@@ -140,7 +141,7 @@ const StudentProgramForm = ({methods, user}: StudentProgramFormProps) => {
                         />
                     </div>
                 </div>
-                <div className="form-group col-md-4">
+                <div className="form-group col-md-3">
                     <label className="form-label" htmlFor="boardingId">Program Boarding</label>
                     <div className="form-control-wrap">
                         <Controller
@@ -163,6 +164,31 @@ const StudentProgramForm = ({methods, user}: StudentProgramFormProps) => {
                         />
                     </div>
                 </div>
+                {user?.role === 2 && (
+                    <div className="form-group col-md-3">
+                        <label className="form-label" htmlFor="status">Status</label>
+                        <div className="form-control-wrap">
+                            <Controller
+                                name="status"
+                                control={control}
+                                rules={{required: 'Gelombang tidak boleh kosong'}}
+                                render={({field: {onChange, value}}) => (
+                                    <React.Fragment>
+                                        <RSelect
+                                            id="status"
+                                            options={STUDENT_STATUS}
+                                            value={STUDENT_STATUS?.find((item) => item.value === value)}
+                                            onChange={(val) => onChange(val?.value)}
+                                            placeholder="Pilih Status"
+                                        />
+                                        <input type="hidden" className="form-control" id="periodId"/>
+                                        {errors.status && <span className="invalid">{errors.status.message}.</span>}
+                                    </React.Fragment>
+                                )}
+                            />
+                        </div>
+                    </div>
+                )}
             </Row>
     )
 }

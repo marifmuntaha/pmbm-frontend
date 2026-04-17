@@ -25,6 +25,7 @@ type OperatorStats = {
             alias: string;
             total: number;
         }>;
+        out: number;
     };
     recentStudents: any[];
 }
@@ -83,7 +84,7 @@ const OperatorDashboard = () => {
                     ) : (
                         data && (
                             <>
-                                <Col md={3}>
+                                <Col md={2}>
                                     <Card className="card-bordered border-primary shadow-sm h-100">
                                         <div className="card-inner">
                                             <div className="card-title-group align-start mb-2">
@@ -101,102 +102,120 @@ const OperatorDashboard = () => {
                                         </div>
                                     </Card>
                                 </Col>
-                                <Col md={9}>
-                                    <Row>
-                                        <Col md={3}>
-                                            <Card className="card-bordered border-danger shadow-sm h-100">
-                                                <div className="card-inner">
-                                                    <div className="card-title-group align-start mb-2">
-                                                        <div className="card-title">
-                                                            <h6 className="title text-soft">SISWA BOARDING</h6>
-                                                        </div>
-                                                        <div className="card-tools">
-                                                            <Icon name="home-fill" className="text-danger fs-3" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="data-group align-end flex-wrap g-3 justify-between">
-                                                        <div className="amount text-danger fs-2">{data.stats.boarding}</div>
-                                                        <div className="danger text-soft small">Tinggal di Asrama</div>
-                                                    </div>
+                                <Col md={2}>
+                                    <Card className="card-bordered border-info shadow-sm h-100">
+                                        <div className="card-inner">
+                                            <div className="card-title-group align-start mb-2">
+                                                <div className="card-title">
+                                                    <h6 className="title text-soft">SISWA MONDOK</h6>
                                                 </div>
-                                            </Card>
-                                        </Col>
-                                        <Col md={3}>
-                                            <Card className="card-bordered border-danger shadow-sm h-100">
-                                                <div className="card-inner">
-                                                    <div className="card-title-group align-start mb-2">
-                                                        <div className="card-title">
-                                                            <h6 className="title text-soft">NON BOARDING</h6>
-                                                        </div>
-                                                        <div className="card-tools">
-                                                            <Icon name="user-fill" className="text-danger fs-3" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="data-group align-end flex-wrap g-3 justify-between">
-                                                        <div className="amount text-danger fs-2">{data.stats.nonBoarding}</div>
-                                                        <div className="danger text-soft small">Pulang Pergi</div>
-                                                    </div>
+                                                <div className="card-tools">
+                                                    <Icon name="home-fill" className="text-info fs-3" />
                                                 </div>
-                                            </Card>
-                                        </Col>
-                                        <Col md={3}>
-                                            <Card className="card-bordered border-success shadow-sm h-100">
-                                                <div className="card-inner">
-                                                    <div className="card-title-group align-start mb-2">
-                                                        <div className="card-title">
-                                                            <h6 className="title text-soft">TERVERIFIKASI</h6>
-                                                        </div>
-                                                        <div className="card-tools">
-                                                            <Icon name="check-circle-fill" className="text-success fs-3" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="data-group align-end flex-wrap g-3 justify-between">
-                                                        <div className="amount text-success fs-2">{data.stats.verified}</div>
-                                                        <div className="info text-soft small">Dokumen Lengkap</div>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        </Col>
-                                        <Col md={3}>
-                                            <Card className="card-bordered border-warning shadow-sm h-100">
-                                                <div className="card-inner">
-                                                    <div className="card-title-group align-start mb-2">
-                                                        <div className="card-title">
-                                                            <h6 className="title text-soft">MENUNGGU VERIFIKASI</h6>
-                                                        </div>
-                                                        <div className="card-tools">
-                                                            <Icon name="alert-circle-fill" className="text-warning fs-3" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="data-group align-end flex-wrap g-3 justify-between">
-                                                        <div className="amount text-warning fs-2">{data.stats.unverified}</div>
-                                                        <div className="info text-soft small">Perlu Reviu</div>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        </Col>
-                                    </Row>
+                                            </div>
+                                            <div className="data-group align-end flex-wrap g-3 justify-between">
+                                                <div className="amount text-info fs-2">{data.stats.boarding}</div>
+                                                <div className="danger text-soft small">Tinggal di Asrama</div>
+                                            </div>
+                                        </div>
+                                    </Card>
                                 </Col>
+                                <Col md={2}>
+                                    <Card className="card-bordered border-info shadow-sm h-100">
+                                        <div className="card-inner">
+                                            <div className="card-title-group align-start mb-2">
+                                                <div className="card-title">
+                                                    <h6 className="title text-soft">NON PONDOK</h6>
+                                                </div>
+                                                <div className="card-tools">
+                                                    <Icon name="user-fill" className="text-info fs-3" />
+                                                </div>
+                                            </div>
+                                            <div className="data-group align-end flex-wrap g-3 justify-between">
+                                                <div className="amount text-info fs-2">{data.stats.nonBoarding}</div>
+                                                <div className="danger text-soft small">Pulang Pergi</div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </Col>
+                                <Col md={2}>
+                                    <Card className="card-bordered border-success shadow-sm h-100">
+                                        <div className="card-inner">
+                                            <div className="card-title-group align-start mb-2">
+                                                <div className="card-title">
+                                                    <h6 className="title text-soft">TERVERIFIKASI</h6>
+                                                </div>
+                                                <div className="card-tools">
+                                                    <Icon name="check-circle-fill" className="text-success fs-3" />
+                                                </div>
+                                            </div>
+                                            <div className="data-group align-end flex-wrap g-3 justify-between">
+                                                <div className="amount text-success fs-2">{data.stats.verified}</div>
+                                                <div className="info text-soft small">Dokumen Lengkap</div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </Col>
+                                <Col md={2}>
+                                    <Card className="card-bordered border-warning shadow-sm h-100">
+                                        <div className="card-inner">
+                                            <div className="card-title-group align-start mb-2">
+                                                <div className="card-title">
+                                                    <h6 className="title text-soft">PENDING</h6>
+                                                </div>
+                                                <div className="card-tools">
+                                                    <Icon name="alert-circle-fill" className="text-warning fs-3" />
+                                                </div>
+                                            </div>
+                                            <div className="data-group align-end flex-wrap g-3 justify-between">
+                                                <div className="amount text-warning fs-2">{data.stats.unverified}</div>
+                                                <div className="info text-soft small">Perlu Reviu</div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </Col>
+                                <Col md={2}>
+                                    <Card className="card-bordered border-danger shadow-sm h-100">
+                                        <div className="card-inner">
+                                            <div className="card-title-group align-start mb-2">
+                                                <div className="card-title">
+                                                    <h6 className="title text-soft">MENGUNDURKAN</h6>
+                                                </div>
+                                                <div className="card-tools">
+                                                    <Icon name="alert-circle-fill" className="text-danger fs-3" />
+                                                </div>
+                                            </div>
+                                            <div className="data-group align-end flex-wrap g-3 justify-between">
+                                                <div className="amount text-danger fs-2">{data.stats.out}</div>
+                                                <div className="info text-soft small">Mengundurkan Diri</div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </Col>
+                                <Col md={12}>
+                                <div className="d-flex flex-wrap g-3">
                                 {data.stats.programs.map((prog, idx) => (
-                                    <Col md={3} key={idx}>
-                                        <Card className="card-bordered border-info shadow-sm h-100">
+                                    <div key={idx} style={{ flex: "1 0 18%", minWidth: "200px" }}>
+                                        <Card className="card-bordered border-gray shadow-sm h-100">
                                             <div className="card-inner">
                                                 <div className="card-title-group align-start mb-2">
                                                     <div className="card-title">
                                                         <h6 className="title text-soft">{prog.name.toUpperCase()}</h6>
                                                     </div>
                                                     <div className="card-tools">
-                                                        <Icon name="award-fill" className="text-info fs-3" />
+                                                        <Icon name="award-fill" className="text-gray fs-3" />
                                                     </div>
                                                 </div>
                                                 <div className="data-group align-end flex-wrap g-3 justify-between">
-                                                    <div className="amount text-info fs-2">{prog.total}</div>
+                                                    <div className="amount text-gray fs-2">{prog.total}</div>
                                                     <div className="info text-soft small">Siswa Pilihan</div>
                                                 </div>
                                             </div>
                                         </Card>
-                                    </Col>
+                                    </div>
                                 ))}
+                                </div>
+                                </Col>
                                 <Col md={8}>
                                     <PreviewCard className="h-100">
                                         <div className="card-title-group align-start mb-3">

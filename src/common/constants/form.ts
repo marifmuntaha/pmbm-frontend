@@ -47,3 +47,8 @@ export const UNIT_OPTIONS: OptionsType[] = [
     { value: 1, label: 'Rp.' },
     { value: 2, label: '%' },
 ]
+
+export const STUDENT_STATUS: OptionsType[] = [
+    {value: 1, label: "Aktif"},
+    {value: 2, label: "Mengundurkan Diri" },
+]

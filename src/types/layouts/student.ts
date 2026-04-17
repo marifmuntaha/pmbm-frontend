@@ -36,6 +36,7 @@ export type StudentOperatorType = {
     boarding: string,
     room?: string,
     verification: Partial<StudentVerificationType>
+    status: number
 }
 
 export type StudentTreasurerType = {

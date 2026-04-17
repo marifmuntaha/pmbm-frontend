@@ -4,7 +4,6 @@ import type {
     StudentBoardingType,
     StudentDashboardType,
     StudentInvoiceType,
-    StudentTreasurerType
 } from "@/types";
 
 const api = new apiCore()
@@ -16,10 +15,10 @@ async function studentDashboard(params: Record<string, any> = {}, notification: 
     return result !== undefined ? result : undefined;
 }
 
-async function studentTreasurer(params: Record<string, any> = {}, notification: boolean = false): Promise<StudentTreasurerType[] | []> {
+async function studentTreasurer<T>(params: Record<string, any> = {}, notification: boolean = false): Promise<T[] | []> {
     const baseUrl = '/student/treasurer';
-    const result = await api.get<StudentTreasurerType[]>(baseUrl, params, notification)
-        .then((value: ApiResponseInterface<StudentTreasurerType[]>) => value.result);
+    const result = await api.get<T[]>(baseUrl, params, notification)
+        .then((value: ApiResponseInterface<T[]>) => value.result);
     return result !== undefined ? result : [];
 }
 

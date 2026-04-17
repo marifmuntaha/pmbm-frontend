@@ -144,6 +144,7 @@ export type StudentProgramType = {
     program?: InstitutionProgramType
     boarding?: BoardingType
     room?: RoomType
+    status?: number
     createdBy?: string
     updatedBy?: string
     created_at?: string

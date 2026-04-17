@@ -68,11 +68,19 @@ const StudentOperator = () => {
             name: "Status",
             selector: (row) => row?.verification?.id,
             sortable: false,
-            cell: (row) => (
-                <Badge color={row?.verification !== null && row?.guardName !== "-" ? "success" : "warning"}>
-                    {row?.verification !== null && row?.guardName !== "-" ? "Terverifikasi" : "Pending"}
-                </Badge>
-            ),
+            cell: (row) => {
+                if (row.status === 2 ) {
+                    return (
+                        <Badge color="danger">Menundurkan Diri</Badge>
+                    )
+                } else {
+                    return (
+                        <Badge color={row?.verification !== null && row?.guardName !== "-" ? "success" : "warning"}>
+                            {row?.verification !== null && row?.guardName !== "-" ? "Terverifikasi" : "Pending"}
+                        </Badge>
+                    )
+                }
+            },
         },
         {
             name: "Aksi",
@@ -134,7 +142,7 @@ const StudentOperator = () => {
     }
 
     useEffect(() => {
-        studentTreasurer({ yearId: year?.id, institutionId: institution?.id })
+        studentTreasurer<StudentOperatorType>({ yearId: year?.id, institutionId: institution?.id })
             .then((resp) => setStudents(resp))
             .finally(() => setLoadData(false))
     }, []);
