@@ -72,7 +72,6 @@ const InvoiceReport = () => {
         },
     ];
 
-    // Load institutions
     useEffect(() => {
         const fetchData = async () => {
             await getInstitution<OptionsType>({ type: 'select' }).then((resp) => {
@@ -82,11 +81,6 @@ const InvoiceReport = () => {
         fetchData();
     }, []);
 
-    useEffect(() => {
-        if (user?.institutionId) {
-            setInstitutionId(user.institutionId);
-        }
-    }, [user]);
 
     const handleExport = () => {
         const params: Record<string, any> = { yearId: year?.id };
@@ -106,7 +100,6 @@ const InvoiceReport = () => {
 
     useEffect(() => {
         if (year?.id) {
-            setLoadData(true);
             const params: Record<string, any> = { yearId: year.id };
             if (institutionId) params.institutionId = institutionId;
             if (statusFilter) params.status = statusFilter;
@@ -119,7 +112,7 @@ const InvoiceReport = () => {
                     setLoadData(false);
                 });
         }
-    }, [year, institutionId, statusFilter, user]);
+    }, [year, institutionId, statusFilter]);
 
     return (
         <React.Fragment>
@@ -148,7 +141,7 @@ const InvoiceReport = () => {
                         </BlockBetween>
                     </BlockHead>
                     <PreviewCard>
-                        <Row className="gy-4 mb-4">
+                        <Row className="gy-4">
                             <Col sm={6}>
                                 <FormGroup>
                                     <Label>Lembaga</Label>
@@ -173,7 +166,6 @@ const InvoiceReport = () => {
                                 </FormGroup>
                             </Col>
                         </Row>
-
                         <ReactDataTable
                             data={invoices}
                             columns={Column}

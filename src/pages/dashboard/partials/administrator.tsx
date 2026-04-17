@@ -129,7 +129,7 @@ const Administrator = () => {
                                             <span className="text-muted small">Siswa</span>
                                         </div>
                                         <div className="row g-2 border-top pt-2 mt-auto">
-                                            <div className="col-6 border-end">
+                                            <div className="col-4 border-end">
                                                 <div className="d-flex align-items-center">
                                                     <div className="dot dot-success me-2"></div>
                                                     <div>
@@ -138,12 +138,21 @@ const Administrator = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="col-6 ps-3">
+                                            <div className="col-4 ps-3">
                                                 <div className="d-flex align-items-center">
                                                     <div className="dot dot-warning me-2"></div>
                                                     <div>
                                                         <span className="d-block fw-bold text-dark fs-12px">{data.totalUnverified}</span>
                                                         <span className="d-block overly-small text-soft">Pending</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="col-4 ps-3">
+                                                <div className="d-flex align-items-center">
+                                                    <div className="dot dot-danger me-2"></div>
+                                                    <div>
+                                                        <span className="d-block fw-bold text-dark fs-12px">{data.totalStudentsOut}</span>
+                                                        <span className="d-block overly-small text-soft">Keluar</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -200,6 +209,10 @@ const Administrator = () => {
                                                 <div className="text-center border-start ps-3">
                                                     <span className="d-block h4 mb-0 text-warning">{inst.unverified}</span>
                                                     <span className="small text-soft">Pending</span>
+                                                </div>
+                                                <div className="text-center border-start ps-3">
+                                                    <span className="d-block h4 mb-0 text-danger">{inst.out}</span>
+                                                    <span className="small text-soft">Keluar</span>
                                                 </div>
                                             </div>
                                         </div>

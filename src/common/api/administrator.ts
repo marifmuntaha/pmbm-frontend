@@ -6,6 +6,7 @@ const api = new apiCore();
 export type AdminDashboardStats = {
     totalInstitutions: number;
     totalStudents: number;
+    totalStudentsOut: number;
     totalVerified: number;
     totalUnverified: number;
     totalBoarding: number;
@@ -20,6 +21,7 @@ export type AdminDashboardStats = {
         totalStudents: number;
         verified: number;
         unverified: number;
+        out: number;
         totalPaid: number;
         totalUnpaid: number;
         totalInvoiced: number;

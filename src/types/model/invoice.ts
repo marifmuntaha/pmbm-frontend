@@ -7,6 +7,7 @@ export type InvoiceType = {
     studentName?: string;
     name: string;
     amount: number;
+    original_amount?: number;
     dueDate: string;
     status: string;
     link?: string;
