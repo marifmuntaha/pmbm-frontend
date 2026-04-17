@@ -20,7 +20,7 @@ import type {
     StudentInvoiceType,
     StudentVerificationType
 } from "@/types";
-import { Badge, ButtonGroup } from "reactstrap";
+import {Badge, ButtonGroup, Spinner} from "reactstrap";
 import { formatCurrency, getStatusInvoice } from "@/helpers";
 import Form from "./form";
 import { get as getProduct } from "@/common/api/master/product";
@@ -42,12 +42,14 @@ const Invoice = () => {
     const [products, setProducts] = useState<ProductType[]>([])
     const [invoices, setInvoices] = useState<StudentInvoiceType[]>([])
     const [invoice, setInvoice] = useState<InvoiceType>()
+    const [sendingBuckWa, setSendingBuckWa] = useState(false)
     const navigate = useNavigate()
     const Column: ColumnType<StudentInvoiceType>[] = [
         {
             name: "Nomor",
             selector: (row) => row?.invoice?.reference,
             sortable: false,
+            width: "140px"
         },
         {
             name: "Nama",
@@ -63,6 +65,11 @@ const Invoice = () => {
         {
             name: "Alamat",
             selector: (row) => row.address,
+            sortable: false,
+        },
+        {
+            name: "Program",
+            selector: (row) => row?.program,
             sortable: false,
         },
         {
@@ -111,7 +118,6 @@ const Invoice = () => {
                     {row.invoice && (
                         <Button outline color="success" onClick={() => {
                             sendWhatsapp(row.invoice?.id).then(() => {
-                                // Notification is handled by the api core directly
                             });
                         }}>
                             <Icon name="whatsapp" />
@@ -155,6 +161,27 @@ const Invoice = () => {
             });
 
     }
+    const handleSendBuckWA = async () => {
+        if (invoices.length === 0) return;
+        setSendingBuckWa(true);
+
+        try {
+            for (let i = 0; i < invoices.length; i++) {
+                const invoice = invoices[i];
+                await sendWhatsapp(invoice.invoice?.id, false);
+
+                if (i < invoices.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+            alert("Semua pesan berhasil dikirim!");
+        } catch (error) {
+            console.error("Terjadi kesalahan:", error);
+            alert("Terjadi kesalahan saat mengirim pesan.");
+        } finally {
+            setSendingBuckWa(false);
+        }
+    }
     useEffect(() => {
         if (loadData) studentInvoice({ yearId: year?.id, institutionId: institution?.id })
             .then((resp) => setInvoices(resp))
@@ -182,6 +209,21 @@ const Invoice = () => {
                                     >
                                         <Icon name="menu-alt-r" />
                                     </Button>
+                                    <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
+                                        <ul className="nk-block-tools g-3">
+                                            <li>
+                                                <Button
+                                                    color="success"
+                                                    size="sm"
+                                                    onClick={() => handleSendBuckWA()}
+                                                    disabled={sendingBuckWa}
+                                                >
+                                                    {sendingBuckWa ? <Spinner size="sm" /> : <Icon name="whatsapp" />}
+                                                    <span>KIRIM SEMUA</span>
+                                                </Button>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </BlockHeadContent>
                         </BlockBetween>

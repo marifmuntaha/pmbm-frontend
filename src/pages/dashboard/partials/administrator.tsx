@@ -54,8 +54,8 @@ const Administrator = () => {
     }
 
     useEffect(() => {
+        setLoading(true);
         if (year?.id) {
-            setLoading(true);
             getDashboardStats({
                 yearId: `${year.id}`
             })

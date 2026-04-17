@@ -29,6 +29,7 @@ const StudentOperator = () => {
     const [sm, updateSm] = useState(false)
     const [loading, setLoading] = useState<boolean | number | string | undefined>(false)
     const [sendingWa, setSendingWa] = useState<number | string | null>(null)
+    const [sendingBuckWa, setSendingBuckWa] = useState(false)
     const [loadData, setLoadData] = useState(true)
     const [students, setStudents] = useState<StudentOperatorType[]>([])
     const Column: ColumnType<StudentOperatorType>[] = [
@@ -68,8 +69,8 @@ const StudentOperator = () => {
             selector: (row) => row?.verification?.id,
             sortable: false,
             cell: (row) => (
-                <Badge color={row?.verification !== null ? "success" : "warning"}>
-                    {row?.verification !== null ? "Terverifikasi" : "Pending"}
+                <Badge color={row?.verification !== null && row?.guardName !== "-" ? "success" : "warning"}>
+                    {row?.verification !== null && row?.guardName !== "-" ? "Terverifikasi" : "Pending"}
                 </Badge>
             ),
         },
@@ -110,6 +111,27 @@ const StudentOperator = () => {
             ),
         },
     ];
+    const handleSendBuckWA = async () => {
+        if (students.length === 0) return;
+        setSendingBuckWa(true);
+
+        try {
+            for (let i = 0; i < students.length; i++) {
+                const student = students[i];
+                await sendWhatsAppRegistrationProof(student.userId as string | number);
+
+                if (i < students.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+            alert("Semua pesan berhasil dikirim!");
+        } catch (error) {
+            console.error("Terjadi kesalahan:", error);
+            alert("Terjadi kesalahan saat mengirim pesan.");
+        } finally {
+            setSendingBuckWa(false);
+        }
+    }
 
     useEffect(() => {
         studentTreasurer({ yearId: year?.id, institutionId: institution?.id })
@@ -144,6 +166,19 @@ const StudentOperator = () => {
                                                     onClick={() => navigate('/data-pendaftar/tambah')}>
                                                     <Icon name="plus" />
                                                     <span>TAMBAH</span>
+                                                </Button>
+                                            </li>
+                                            <li>
+                                                <Button
+                                                    color="success"
+                                                    size="sm"
+                                                    outline
+                                                    className="btn-white"
+                                                    disabled={sendingBuckWa}
+                                                    onClick={() => handleSendBuckWA()}
+                                                >
+                                                    {sendingBuckWa ? <Spinner size="sm" /> : <Icon name="whatsapp" />}
+                                                    <span>KIRIM SEMUA</span>
                                                 </Button>
                                             </li>
                                         </ul>

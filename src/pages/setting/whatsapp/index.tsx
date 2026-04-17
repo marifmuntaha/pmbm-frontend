@@ -49,7 +49,7 @@ const Whatsapp: React.FC = () => {
     }
     const buttonAction = (data: WhatsappType) => {
         const {results} = data.status;
-        if (results.state === "disconnected") {
+        if (results?.state === "disconnected") {
             return (
                 <ButtonGroup size="sm">
                     <Button outline color="info" id="scan" onClick={() => {
@@ -73,7 +73,7 @@ const Whatsapp: React.FC = () => {
                 </ButtonGroup>
             )
         }
-        if (results.state === "connected" || results.state === "logged_in") {
+        if (results?.state === "connected" || results.state === "logged_in") {
             return (
                 <ButtonGroup size="sm">
                     <Button outline color="info" id="reload" onClick={() => {

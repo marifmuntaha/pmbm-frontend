@@ -14,10 +14,22 @@ import {
 } from "@/components";
 import { useYearContext } from "@/common/hooks/useYearContext";
 import { useInstitutionContext } from "@/common/hooks/useInstitutionContext";
-import { Badge, Modal, ModalHeader, ModalBody, ModalFooter, Col, Row, FormGroup, Label, ButtonGroup } from "reactstrap";
+import {
+    Badge,
+    Modal,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    Col,
+    Row,
+    FormGroup,
+    Label,
+    ButtonGroup,
+    Spinner
+} from "reactstrap";
 import { formatCurrency, formatNumber, getPaymentStatusColor, getPaymentStatusText } from "@/helpers";
 import { studentInvoice } from "@/common/api/student";
-import { cash as cashPayment, get as getPayment } from "@/common/api/payment";
+import { cash as cashPayment, get as getPayment, sendWhatsapp } from "@/common/api/payment";
 import { generateReceipt } from "@/common/api/payment/receipt";
 import type { ColumnType, StudentInvoiceType } from "@/types";
 import Select from "react-select";
@@ -37,9 +49,11 @@ type PaymentType = {
 const Treasure = () => {
     const year = useYearContext();
     const institution = useInstitutionContext();
+    const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
     const [payments, setPayments] = useState<PaymentType[]>([]);
     const [students, setStudents] = useState<StudentInvoiceType[]>([]);
+    const [sendingBuckWa, setSendingBuckWa] = useState(false)
     const [modal, setModal] = useState({
         cash: false,
         detail: false,
@@ -104,6 +118,16 @@ const Treasure = () => {
                             <Icon name="download" />
                         </Button>
                     )}
+                    <Button
+                        outline
+                        color="success"
+                        onClick={() => {
+                            sendWhatsapp(item.id);
+                        }}
+                        title="Kirim Notifikasi"
+                    >
+                        <Icon name="whatsapp" />
+                    </Button>
                 </ButtonGroup>
             )
         },
@@ -125,7 +149,6 @@ const Treasure = () => {
         if (year?.id && institution?.id) {
             studentInvoice({ yearId: year.id, institutionId: institution.id })
                 .then((resp) => {
-                    // Filter only students with unpaid invoices
                     const unpaid = resp.filter(s => s.invoice && s.invoice.status !== 'PAID');
                     setStudents(unpaid);
                 });
@@ -179,6 +202,28 @@ const Treasure = () => {
         }
     };
 
+    const sendBuckWhatsapp = async () => {
+        if (payments.length === 0) return;
+        setSendingBuckWa(true);
+
+        try {
+            for (let i = 0; i < payments.length; i++) {
+                const payment = payments[i];
+                await sendWhatsapp(payment?.id, false);
+
+                if (i < payments.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+            alert("Semua pesan berhasil dikirim!");
+        } catch (error) {
+            console.error("Terjadi kesalahan:", error);
+            alert("Terjadi kesalahan saat mengirim pesan.");
+        } finally {
+            setSendingBuckWa(false);
+        }
+    }
+
     return (
         <React.Fragment>
             <Head title="Data Pembayaran" />
@@ -193,9 +238,34 @@ const Treasure = () => {
                                 </p>
                             </BlockHeadContent>
                             <BlockHeadContent>
-                                <Button color="success" onClick={toggleModal}>
-                                    <Icon name="money" /> <span>Bayar Cash</span>
-                                </Button>
+                                <div className="toggle-wrap nk-block-tools-toggle">
+                                    <Button
+                                        className={`btn-icon btn-trigger toggle-expand me-n1 ${sm ? "active" : ""}`}
+                                        onClick={() => updateSm(!sm)}
+                                    >
+                                        <Icon name="menu-alt-r" />
+                                    </Button>
+                                    <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
+                                        <ul className="nk-block-tools g-3">
+                                            <li>
+                                                <Button color="danger" onClick={toggleModal}>
+                                                    <Icon name="money" /> <span>BAYAR CASH</span>
+                                                </Button>
+                                            </li>
+                                            <li>
+                                                <Button
+                                                    color="success"
+                                                    size="md"
+                                                    onClick={() => sendBuckWhatsapp()}
+                                                    disabled={sendingBuckWa}
+                                                >
+                                                    {sendingBuckWa ? <Spinner size="sm" /> : <Icon name="whatsapp" />}
+                                                    <span>KIRIM SEMUA</span>
+                                                </Button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </BlockHeadContent>
                         </BlockBetween>
                     </BlockHead>

@@ -615,7 +615,11 @@ const VerificationForm = ({ formData }: StudentFormProps) => {
                         guardStudy: formData.parent.guardStudy?.value ?? 0,
                         guardJob: formData.parent.guardJob?.value ?? 0,
                     } as any;
-                    await updateParent(parentFormData, false);
+                    if (formData.parent.id === undefined) {
+                        await storeParent(parentFormData, false);
+                    } else {
+                        await updateParent(parentFormData, false);
+                    }
                 }
                 if (formData.address) {
                     const addressFormData = {

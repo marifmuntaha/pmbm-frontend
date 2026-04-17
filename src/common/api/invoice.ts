@@ -30,9 +30,9 @@ async function destroy(id: number | undefined) {
     return await api.delete(baseUrl, true).then((resp) => resp);
 }
 
-async function sendWhatsapp(id: number | undefined) {
+async function sendWhatsapp(id: number | undefined, notification: boolean = true) {
     const baseUrl = `/invoice/${id}/send-whatsapp`
-    return await api.create(baseUrl, {}, true).then((resp) => resp);
+    return await api.create(baseUrl, {}, notification).then((resp) => resp);
 }
 
 export { get, store, show, update, destroy, sendWhatsapp }

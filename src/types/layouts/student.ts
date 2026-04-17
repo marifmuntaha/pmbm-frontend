@@ -61,7 +61,7 @@ export type StudentInvoiceType = {
     boardingId: number,
     period?: string,
     invoice?: InvoiceType,
-    program?: Partial<StudentProgramType>
+    program?: string
     verification?: StudentVerificationType
 }
 
