@@ -58,7 +58,7 @@ const StudentTreasure = () => {
     ];
 
     useEffect(() => {
-        studentTreasurer({ yearId: year?.id, institutionId: institution?.id })
+        studentTreasurer<StudentTreasurerType>({ yearId: year?.id, institutionId: institution?.id })
             .then((resp) => setStudents(resp))
             .finally(() => setLoadData(false))
     }, []);
