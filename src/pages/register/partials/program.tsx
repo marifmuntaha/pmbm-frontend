@@ -44,6 +44,7 @@ const StudentProgram = () => {
             userId: user?.id,
             yearId: year?.id,
             periodId: period?.id,
+            status: 1
         }
         if (formData.id === undefined) {
             storeProgram(formData).then(async (resp) => {
