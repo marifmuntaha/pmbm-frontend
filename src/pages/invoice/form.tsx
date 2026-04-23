@@ -152,7 +152,7 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
                         </thead>
                         <tbody>
                             {invoiceDetail?.map((item, idx: number) => (
-                                <tr key={idx}>
+                                <tr key={item.productId ?? idx}>
                                     <td>{item.name}</td>
                                     <td className="text-end align-content-center">{formatCurrency(item.price)}</td>
                                     <td>

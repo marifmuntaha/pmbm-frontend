@@ -6,6 +6,8 @@ export interface ColumnType<T> {
     sortable: boolean;
     cell?: (row: T, index?: number) => JSX.Element | any;
     width?: string;
+    right?: boolean;
+    center?: boolean;
 }
 
 export type ModalInvoiceType = {

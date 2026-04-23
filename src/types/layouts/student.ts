@@ -33,6 +33,7 @@ export type StudentOperatorType = {
     address: string,
     institution?: string,
     program: string,
+    number_register: string,
     boarding: string,
     room?: string,
     verification: Partial<StudentVerificationType>

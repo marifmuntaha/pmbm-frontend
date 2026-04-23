@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import { useYearContext } from "@/common/hooks/useYearContext";
@@ -14,39 +14,73 @@ import {
     PreviewCard,
     ReactDataTable
 } from "@/components";
-import type { ColumnType, StudentOperatorType } from "@/types";
+import type {
+    ColumnType,
+    StudentAddressType, StudentFileType,
+    StudentOperatorType, StudentOriginType,
+    StudentParentType,
+    StudentPersonalType, StudentProgramType, StudentVerificationType
+} from "@/types";
 import { studentTreasurer } from "@/common/api/student";
 import { sendWhatsAppRegistrationProof } from "@/common/api/student/registration";
 import moment from "moment/moment";
-import { Badge, ButtonGroup, Spinner } from "reactstrap";
+import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import RegistrationProof from "@/pages/print/components/RegistrationProof";
+import {get as getPersonal} from "@/common/api/student/personal";
+import {get as getParent} from "@/common/api/student/parent";
+import {get as getAddress} from "@/common/api/student/address";
+import {get as getProgram} from "@/common/api/student/program";
+import {get as getOrigin} from "@/common/api/student/origin";
+import {get as getFile} from "@/common/api/student/file";
+import {get as getVerification} from "@/common/api/student/verivication";
+import {useReactToPrint} from "react-to-print";
+import {getGender} from "@/helpers";
 
 const StudentOperator = () => {
     const year = useYearContext()
     const institution = useInstitutionContext()
     const navigate = useNavigate()
     const [sm, updateSm] = useState(false)
-    const [loading, setLoading] = useState<boolean | number | string | undefined>(false)
     const [sendingWa, setSendingWa] = useState<number | string | null>(null)
     const [sendingBuckWa, setSendingBuckWa] = useState(false)
+    const [loading, setLoading] = useState(false);
     const [loadData, setLoadData] = useState(true)
     const [students, setStudents] = useState<StudentOperatorType[]>([])
+    const [isOpen, setIsOpen] = useState<number | null>(null);
+    const [data, setData] = useState<{
+        personal?: StudentPersonalType,
+        parent?: StudentParentType,
+        address?: StudentAddressType,
+        program?: StudentProgramType,
+        origin?: StudentOriginType,
+        file?: StudentFileType,
+        verification?: StudentVerificationType,
+    }>();
+    const identityPage = useRef<HTMLDivElement>(null);
     const Column: ColumnType<StudentOperatorType>[] = [
+        {
+            name: "Nomor",
+            selector: (row) => row.number_register,
+            sortable: true,
+            width: "130px"
+        },
         {
             name: "Nama",
             selector: (row) => row?.name,
-            sortable: false,
+            sortable: true,
             width: "350px"
         },
         {
-            name: "Tempat Lahir",
-            selector: (row) => row?.birthPlace,
+            name: "Tempat, Tanggal Lahir",
+            selector: (row) => row?.birthPlace + ', ' + moment(row?.birthDate, 'YYYY-MM-DD').format('DD MMMM YYYY'),
             sortable: false,
+            width: "250px"
         },
         {
-            name: "Tanggal Lahir",
-            selector: (row) => moment(row?.birthDate, 'YYYY-MM-DD').format('DD MMMM YYYY'),
+            name: "Jenis Kelamin",
+            selector: (row) => getGender(row.gender),
             sortable: false,
         },
         {
@@ -57,65 +91,78 @@ const StudentOperator = () => {
         {
             name: "Program",
             selector: (row) => row?.program,
-            sortable: false,
+            sortable: true,
         },
         {
             name: "Boarding",
             selector: (row) => row?.boarding,
-            sortable: false,
+            sortable: true,
         },
         {
             name: "Status",
             selector: (row) => row?.verification?.id,
             sortable: false,
+            width: "100px",
             cell: (row) => {
-                if (row.status === 2 ) {
-                    return (
-                        <Badge color="danger">Menundurkan Diri</Badge>
-                    )
+                if (row.status === 2) {
+                    return <Icon name="stop-circle-fill" className="text-danger fs-20px"/>
                 } else {
-                    return (
-                        <Badge color={row?.verification !== null && row?.guardName !== "-" ? "success" : "warning"}>
-                            {row?.verification !== null && row?.guardName !== "-" ? "Terverifikasi" : "Pending"}
-                        </Badge>
-                    )
+                    if (row?.verification !== null && row?.guardName !== "-") {
+                        return <Icon name="checkbox-checked" className="text-success fs-20px"/>
+                    } else {
+                        return <Icon name="alert-circle-fill" className="text-warning fs-20px" />
+                    }
                 }
             },
         },
         {
-            name: "Aksi",
+            name: "",
             selector: (row) => row?.id,
             sortable: false,
-            width: "150px",
+            width: "80px",
+            right: true,
             cell: (row) => (
-                <ButtonGroup size="sm">
-                    <Button outline color="warning" onClick={() => navigate(`/data-pendaftar/${row.userId}/ubah`)}>
-                        <Icon name="pen" />
-                    </Button>
-                    <Button outline color="success" onClick={async () => {
-                        setSendingWa(row.userId as string | number);
-                        try {
-                            const resp = await sendWhatsAppRegistrationProof(row.userId as string | number);
-                            if (resp.status === 'success') {
-                                toast.success(resp.statusMessage || "WhatsApp berhasil dikirim");
-                            } else {
-                                toast.error(resp.statusMessage || "Gagal mengirim WhatsApp");
-                            }
-                        } catch (err: any) {
-                            toast.error(err.message || "Terjadi kesalahan");
-                        } finally {
-                            setSendingWa(null);
-                        }
-                    }}>
-                        {sendingWa === row.userId ? <Spinner size="sm" /> : <Icon name="whatsapp" />}
-                    </Button>
-                    <Button outline color="danger" onClick={async () => {
-                        setLoading(row?.id);
-                        alert('dihapus')
-                    }}>
-                        {loading === row.id ? <Spinner size="sm" /> : <Icon name="trash" />}
-                    </Button>
-                </ButtonGroup>
+                <Dropdown isOpen={isOpen === row.id} toggle={() => setIsOpen(isOpen === row.id ? null : row.id ?? null)}>
+                    <DropdownToggle className="btn-action" color="light" size="xs">
+                        <Icon name="more-h" />
+                    </DropdownToggle>
+                    <DropdownMenu>
+                        <ul className="link-list-opt">
+                            <li>
+                                <DropdownItem tag="a" href="#links" onClick={() => {
+                                    handlePrint(row.userId).finally(() => handlePrintIdentity())
+                                }}>
+                                    {loading ? <Spinner size="sm" /> :  <Icon name="printer" color="info"/>}<span>Cetak Formulir</span>
+                                </DropdownItem>
+                            </li>
+                            <li>
+                                <DropdownItem tag="a" href="#links" onClick={() => navigate(`/data-pendaftar/${row.userId}/ubah`)}>
+                                    <Icon name="pen" /><span>Ubah/Perbarui</span>
+                                </DropdownItem>
+                            </li>
+                            <li>
+                                <DropdownItem tag="a" href="#links" onClick={async () => {
+                                    setSendingWa(row.userId as string | number);
+                                    try {
+                                        const resp = await sendWhatsAppRegistrationProof(row.userId as string | number);
+                                        if (resp.status === 'success') {
+                                            toast.success(resp.statusMessage || "WhatsApp berhasil dikirim");
+                                        } else {
+                                            toast.error(resp.statusMessage || "Gagal mengirim WhatsApp");
+                                        }
+                                    } catch (err: any) {
+                                        toast.error(err.message || "Terjadi kesalahan");
+                                    } finally {
+                                        setSendingWa(null);
+                                    }
+
+                                }}>
+                                    {sendingWa ? <Spinner size="sm" /> : <Icon name="whatsapp" />} <span>Kirim Notifikasi</span>
+                                </DropdownItem>
+                            </li>
+                        </ul>
+                    </DropdownMenu>
+                </Dropdown>
             ),
         },
     ];
@@ -140,6 +187,39 @@ const StudentOperator = () => {
             setSendingBuckWa(false);
         }
     }
+    const handlePrint = async (userId: number|undefined)=> {
+        setLoading(true)
+        const getData = async () => {
+            const personal = await getPersonal({ userId: userId }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            });
+            const parent = await getParent({ userId: userId }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            })
+            const address = await getAddress({ userId: userId }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            });
+            const program = await getProgram({ userId: userId, with: ['program', 'boarding', 'room'] }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            })
+            const origin = await getOrigin({ userId: userId }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            })
+            const file = await getFile({ userId: userId }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            })
+            const verification = await getVerification({ userId: userId }).then((resp) => {
+                if (resp.length > 0) return resp[0];
+            })
+            setData({ ...data, personal: personal, parent: parent, address: address, program: program, origin: origin, file: file, verification: verification });
+        }
+        getData().finally(() => {
+            setLoading(false);
+        });
+    }
+    const handlePrintIdentity = useReactToPrint({
+        contentRef: identityPage,
+    });
 
     useEffect(() => {
         studentTreasurer<StudentOperatorType>({ yearId: year?.id, institutionId: institution?.id })
@@ -198,6 +278,14 @@ const StudentOperator = () => {
                     <PreviewCard>
                         <ReactDataTable data={students} columns={Column} pagination progressPending={loadData} />
                     </PreviewCard>
+                    <div className="d-flex justify-content-center">
+                        <RegistrationProof
+                            ref={identityPage}
+                            data={data}
+                            institution={institution}
+                            year={year}
+                        />
+                    </div>
                 </Block>
             </Content>
         </React.Fragment>
