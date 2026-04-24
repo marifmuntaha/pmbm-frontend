@@ -68,6 +68,19 @@ async function getDiscountReport<T>(params: Record<string, any> = {}): Promise<T
     return result !== undefined ? result : [];
 }
 
+async function getItemReport<T>(params: Record<string, any> = {}): Promise<T[]> {
+    const baseUrl = '/report/item'
+    const result = await api.get<T[]>(baseUrl, params, false)
+        .then((value: ApiResponseInterface<T[]>) => value.result);
+    return result !== undefined ? result : [];
+}
+
+async function exportItemReport(params: Record<string, any> = {}): Promise<void> {
+    const baseUrl = `/report/item/export`
+    const response = await api.getFile(baseUrl, params);
+    downloadFile(response, 'laporan-tagihan-item.xlsx');
+}
+
 async function exportDiscountReport(params: Record<string, any> = {}): Promise<void> {
     const baseUrl = `/report/discounts/export`
     const response = await api.getFile(baseUrl, params);
@@ -88,6 +101,8 @@ async function exportPaymentReport(params: Record<string, any> = {}): Promise<vo
 
 export {
     getInvoiceReport,
+    getItemReport,
+    exportItemReport,
     getPaymentReport,
     getStats,
     getApplicantReport,

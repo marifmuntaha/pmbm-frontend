@@ -15,12 +15,15 @@ import { useYearContext } from "@/common/hooks/useYearContext";
 import { Badge, Button, FormGroup, Label, Row, Col } from "reactstrap";
 import { formatCurrency, getStatusInvoice } from "@/helpers";
 import { getInvoiceReport, exportInvoiceReport } from "@/common/api/report";
-import type { ColumnType, InvoiceType, OptionsType } from "@/types";
 import { RSelect } from "@/components";
 import { useAuthContext } from "@/common/hooks/useAuthContext";
 import { get as getInstitution } from "@/common/api/institution";
+import { get as getPrograms } from "@/common/api/institution/program";
+import { get as getBoarding } from "@/common/api/master/boarding";
+import { GENDER_OPTIONS } from "@/common/constants";
+import type { ColumnType, InvoiceType, OptionsType } from "@/types";
 
-const InvoiceReport = () => {
+const InvoiceReportStudent = () => {
     const year = useYearContext();
     const { user } = useAuthContext();
     const [loadData, setLoadData] = useState(true);
@@ -28,8 +31,13 @@ const InvoiceReport = () => {
     const [institutions, setInstitutions] = useState<OptionsType[]>([]);
     const [institutionId, setInstitutionId] = useState(user?.institutionId ? user.institutionId : 0);
     const [statusFilter, setStatusFilter] = useState("");
+    const [genderSelected, setGenderSelected] = useState<number>(0);
+    const [programOptions, setProgramOptions] = useState<OptionsType[]>();
+    const [programSelected, setProgramSelected] = useState<number>(0);
+    const [boardingOptions, setBoardingOptions] = useState<OptionsType[]>();
+    const [boardingSelected, setBoardingSelected] = useState<number>(0);
 
-    const statusOptions = [
+    const statusOptions: OptionsType[] = [
         { value: "", label: "Semua Status" },
         { value: "PAID", label: "LUNAS" },
         { value: "PENDING", label: "PROSES" },
@@ -46,17 +54,39 @@ const InvoiceReport = () => {
             name: "Siswa",
             selector: (row: any) => row.student_name,
             sortable: true,
+            width: "280px"
+        },
+        {
+            name: "Program",
+            selector: (row: any) => row.program_name,
+            sortable: true,
         },
         {
             name: "Jumlah",
-            selector: (row: any) => formatCurrency(row.original_amount),
-            sortable: true,
+            selector: (row: any) => formatCurrency(row.original_invoice),
+            sortable: false,
         },
         {
-            name: "Jatuh Tempo",
-            selector: (row) => row.dueDate,
-            sortable: true,
+            name: "Potongan",
+            selector: (row: any) => formatCurrency(row.discount),
+            sortable: false,
         },
+        {
+            name: "Total",
+            selector: (row: any) => formatCurrency(row.original_amount),
+            sortable: false,
+        },
+        {
+            name: "Terbayar",
+            selector: (row: any) => formatCurrency(row.payment),
+            sortable: false,
+        },
+        {
+            name: "Sisa Tagihan",
+            selector: (row: any) => formatCurrency(row.unpaid),
+            sortable: false,
+        },
+
         {
             name: "Status",
             selector: (row) => row.status,
@@ -77,6 +107,12 @@ const InvoiceReport = () => {
             await getInstitution<OptionsType>({ type: 'select' }).then((resp) => {
                 setInstitutions(resp)
             })
+            await getPrograms<OptionsType>({ type: 'select', yearId: year?.id, institutionId: institutionId }).then((resp) => {
+                setProgramOptions([{ value: 0, label: 'Semua' }, ...resp])
+            })
+            await getBoarding<OptionsType>({ type: 'select' }).then((resp) => {
+                setBoardingOptions([{ value: 0, label: 'Semua' }, ...resp])
+            })
         }
         fetchData();
     }, []);
@@ -93,26 +129,39 @@ const InvoiceReport = () => {
         const params: string[] = [];
         if (year?.id) params.push(`yearId=${year.id}`);
         if (institutionId) params.push(`institutionId=${institutionId}`);
+        if (genderSelected) params.push(`gender=${genderSelected}`);
+        if (programSelected) params.push(`programId=${programSelected}`);
+        if (boardingSelected) params.push(`boardingId=${boardingSelected}`);
         if (statusFilter) params.push(`status=${statusFilter}`);
 
         window.open(`/laporan/tagihan/cetak?${params.join("&")}`, "_blank");
     };
-
     useEffect(() => {
-        if (year?.id) {
-            const params: Record<string, any> = { yearId: year.id };
-            if (institutionId) params.institutionId = institutionId;
-            if (statusFilter) params.status = statusFilter;
+        let cancelled = false;
 
-            getInvoiceReport<InvoiceType>(params)
-                .then((resp) => {
-                    setInvoices(resp);
-                })
-                .finally(() => {
-                    setLoadData(false);
-                });
-        }
-    }, [year, institutionId, statusFilter]);
+        const params: Record<string, any> = {
+            type: 'datatable',
+            yearId: year?.id,
+            institutionId: institutionId,
+        };
+        if (genderSelected !== 0) params.gender = genderSelected;
+        if (programSelected !== 0) params.programId = programSelected;
+        if (boardingSelected !== 0) params.boardingId = boardingSelected;
+        if (statusFilter !== "") params.status = statusFilter;
+
+        setLoadData(true);
+        getInvoiceReport<InvoiceType>(params)
+            .then((resp) => {
+                if (!cancelled) setInvoices(resp);
+            })
+            .finally(() => {
+                if (!cancelled) setLoadData(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [year, institutionId, genderSelected, programSelected, boardingSelected, statusFilter]);
 
     return (
         <React.Fragment>
@@ -142,7 +191,7 @@ const InvoiceReport = () => {
                     </BlockHead>
                     <PreviewCard>
                         <Row className="gy-4">
-                            <Col sm={6}>
+                            <Col sm={3}>
                                 <FormGroup>
                                     <Label>Lembaga</Label>
                                     <RSelect
@@ -154,7 +203,40 @@ const InvoiceReport = () => {
                                     />
                                 </FormGroup>
                             </Col>
-                            <Col sm={6}>
+                            <Col sm={2}>
+                                <FormGroup>
+                                    <Label>Jenis Kelamin</Label>
+                                    <RSelect
+                                        options={[{ value: 0, label: 'Semua' }, ...GENDER_OPTIONS]}
+                                        value={GENDER_OPTIONS.find(opt => opt.value === genderSelected) || { value: 0, label: "Semua" }}
+                                        onChange={(opt) => setGenderSelected(opt?.value || 0)}
+                                        placeholder="Pilih Jenis Kelamin"
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col sm={2}>
+                                <FormGroup>
+                                    <Label>Program Madrasah</Label>
+                                    <RSelect
+                                        options={programOptions}
+                                        value={programOptions?.find(opt => opt.value === programSelected)}
+                                        onChange={(opt) => setProgramSelected(opt?.value || 0)}
+                                        placeholder="Pilih Program"
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col sm={2}>
+                                <FormGroup>
+                                    <Label>Program Pondok</Label>
+                                    <RSelect
+                                        options={boardingOptions}
+                                        value={boardingOptions?.find(opt => opt.value === boardingSelected)}
+                                        onChange={(opt) => setBoardingSelected(opt?.value || 0)}
+                                        placeholder="Pilih Program"
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col sm={2}>
                                 <FormGroup>
                                     <Label>Status</Label>
                                     <RSelect
@@ -179,4 +261,4 @@ const InvoiceReport = () => {
     );
 };
 
-export default InvoiceReport;
+export default InvoiceReportStudent;

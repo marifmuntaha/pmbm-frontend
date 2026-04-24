@@ -160,7 +160,10 @@ const menuTreasurer = [
         subMenu: [
             {
                 text: "Laporan Tagihan",
-                link: "/laporan/tagihan"
+                subMenu: [
+                    {text: "Tagihan Per Siswa", link: "/laporan/tagihan/siswa"},
+                    {text: "Tagihan Per Item", link: "/laporan/tagihan/Item"},
+                ]
             },
             {
                 text: "Laporan Pembayaran",

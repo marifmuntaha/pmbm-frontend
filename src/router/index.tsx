@@ -34,7 +34,7 @@ import Invoice from "@/pages/invoice";
 import InvoiceDetail from "@/pages/invoice/detail";
 import InvoicePrint from "@/pages/invoice/print";
 import Print from "@/pages/print";
-import InvoiceReport from "@/pages/report/invoice";
+import InvoiceReportStudent from "@/pages/report/invoiceStudent";
 import PaymentReport from "@/pages/report/payment";
 import ApplicantsReport from "@/pages/report/applicants";
 import DiscountsReport from "@/pages/report/discounts";
@@ -57,6 +57,7 @@ import InvoiceReportPrint from "@/pages/report/invoice-print";
 import PaymentReportPrint from "@/pages/report/payment-print";
 import ApplicantsReportPrint from "@/pages/report/applicants-print";
 import DiscountsReportPrint from "@/pages/report/discounts-print";
+import InvoiceItemReportPrint from "@/pages/report/invoice-item-print";
 
 interface ScrollToTopProps {
     children: ReactNode;
@@ -75,6 +76,7 @@ import SystemLog from "@/pages/dashboard/log";
 import IntegrationTest from "@/pages/dashboard/test";
 import AnnouncementPage from "@/pages/announcement";
 import Whatsapp from "@/pages/setting/whatsapp";
+import InvoiceReportItem from "@/pages/report/invoiceItem";
 
 const Router: React.FC = () => {
     return (
@@ -125,7 +127,8 @@ const Router: React.FC = () => {
                                 <Route path="/pembayaran" element={<Payment />} />
                                 <Route path="/pembayaran/:id/lihat" element={<PaymentDetail />} />
                                 <Route path="/cetak-kartu" element={<Print />} />
-                                <Route path="/laporan/tagihan" element={<InvoiceReport />} />
+                                <Route path="/laporan/tagihan/siswa" element={<InvoiceReportStudent />} />
+                                <Route path="/laporan/tagihan/item" element={<InvoiceReportItem />} />
                                 <Route path="/laporan/pembayaran" element={<PaymentReport />} />
                                 <Route path="/laporan/pendaftar" element={<ApplicantsReport />} />
                                 <Route path="/laporan/potongan" element={<DiscountsReport />} />
@@ -147,6 +150,7 @@ const Router: React.FC = () => {
                             <Route path="/data-tagihan/:id/cetak" element={<InvoicePrint />} />
                             <Route path="/laporan/boarding/cetak" element={<StudentBoardingPrint />} />
                             <Route path="/laporan/tagihan/cetak" element={<InvoiceReportPrint />} />
+                            <Route path="/laporan/tagihan-item/cetak" element={<InvoiceItemReportPrint />} />
                             <Route path="/laporan/pembayaran/cetak" element={<PaymentReportPrint />} />
                             <Route path="/laporan/pendaftar/cetak" element={<ApplicantsReportPrint />} />
                             <Route path="/laporan/potongan/cetak" element={<DiscountsReportPrint />} />

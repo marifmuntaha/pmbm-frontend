@@ -17,6 +17,18 @@ export type InvoiceType = {
     updated_at?: string;
 }
 
+export type InvoiceDatatableType = {
+    reference: string;
+    student_name: string;
+    program_name: string;
+    original_invoice: number;
+    discount: number;
+    original_amount: number;
+    payment: number;
+    unpaid: number;
+    status: string;
+}
+
 export type InvoiceDetailType = {
     id?: number;
     invoiceId?: number;

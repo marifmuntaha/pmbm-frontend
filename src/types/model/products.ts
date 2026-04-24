@@ -15,4 +15,6 @@ export type ProductType = {
     boarding?: Partial<InstitutionProgramType>
     createdBy?: number;
     updatedBy?: number;
+    invoice?: number;
+    discount?: number;
 }

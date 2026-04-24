@@ -29,7 +29,7 @@ import {
 } from "reactstrap";
 import { formatCurrency, formatNumber, getPaymentStatusColor, getPaymentStatusText } from "@/helpers";
 import { studentInvoice } from "@/common/api/student";
-import { cash as cashPayment, get as getPayment, sendWhatsapp } from "@/common/api/payment";
+import { cash as cashPayment, get as getPayment, update as updatePayment, sendWhatsapp } from "@/common/api/payment";
 import { generateReceipt } from "@/common/api/payment/receipt";
 import type { ColumnType, StudentInvoiceType } from "@/types";
 import Select from "react-select";
@@ -44,6 +44,7 @@ type PaymentType = {
     transaction_time: string;
     amount: number;
     created_at: string;
+    deposited: number;
 }
 
 const Treasure = () => {
@@ -51,6 +52,7 @@ const Treasure = () => {
     const institution = useInstitutionContext();
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
+    const [loading, setLoading] = useState<number|undefined|boolean>(false);
     const [payments, setPayments] = useState<PaymentType[]>([]);
     const [students, setStudents] = useState<StudentInvoiceType[]>([]);
     const [sendingBuckWa, setSendingBuckWa] = useState(false)
@@ -95,7 +97,7 @@ const Treasure = () => {
             name: 'Aksi',
             selector: (row: any) => row.id,
             sortable: false,
-            cell: (item: any) => (
+            cell: (item) => (
                 <ButtonGroup size="sm">
                     <Button
                         outline
@@ -128,6 +130,31 @@ const Treasure = () => {
                     >
                         <Icon name="whatsapp" />
                     </Button>
+                    {item.deposited !== 1 && (
+                        <Button
+                            outline
+                            color="warning"
+                            onClick={async () => {
+                                setLoading(item.id);
+                                const paymentData: PaymentType = {
+                                    id: item.id,
+                                    name: item.name,
+                                    reference: item.reference,
+                                    method: item.method,
+                                    status: item.status,
+                                    transaction_id: item.transaction_id,
+                                    transaction_time: item.transaction_time,
+                                    amount: item.amount,
+                                    created_at: item.created_at,
+                                    deposited: 1
+                                }
+                                await updatePayment(paymentData, false);
+                            }}
+                            title="Tandai Setor ke-pelopor"
+                        >
+                            <Icon name="money" />
+                        </Button>
+                    )}
                 </ButtonGroup>
             )
         },
@@ -194,12 +221,10 @@ const Treasure = () => {
             document.body.appendChild(link);
             link.click();
 
-            // Cleanup
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (error: any) {
             console.error('Error downloading receipt:', error);
-            alert(error?.message || 'Gagal mengunduh bukti pembayaran.');
         }
     };
 

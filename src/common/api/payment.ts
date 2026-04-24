@@ -20,9 +20,9 @@ async function show(params: Record<string, any> = {}) {
     return await api.get<InvoiceType>(baseUrl, params, true).then((resp) => resp.result);
 }
 
-async function update(params: Record<string, any> = {}) {
+async function update(params: Record<string, any> = {}, notification: boolean = true): Promise<void> {
     const baseUrl = `/invoice/${params.id}`
-    return await api.update<InvoiceType>(baseUrl, params, true).then((resp) => resp);
+    return await api.update<InvoiceType>(baseUrl, params, notification).then((resp) => resp);
 }
 
 async function destroy(id: number | undefined) {

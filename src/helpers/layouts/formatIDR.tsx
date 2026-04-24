@@ -6,9 +6,9 @@ export const formatIDR = (money: number|undefined|null): string => {
     }).format(money) : 'Rp. 0'
 }
 
-export const formatCurrency = (value: number|null): string => {
+export const formatCurrency = (value: number|null|undefined): string => {
     const number = String(value).replace(/[^0-9]/g, '');
-    if (value !== null && value < 0) return "(" + number.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ")"
+    if (value !== null && value !== undefined && value < 0) return "(" + number.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ")"
     else return number.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
 }
 
