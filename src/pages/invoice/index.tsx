@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -20,13 +20,81 @@ import type {
     StudentInvoiceType,
     StudentVerificationType
 } from "@/types";
-import {Badge, ButtonGroup, Spinner} from "reactstrap";
+import { Badge, ButtonGroup, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Spinner } from "reactstrap";
 import { formatCurrency, getStatusInvoice } from "@/helpers";
 import Form from "./form";
 import { get as getProduct } from "@/common/api/master/product";
 import { studentInvoice } from "@/common/api/student";
 import { sendWhatsapp } from "@/common/api/invoice";
 import { useNavigate } from "react-router-dom";
+
+// ---------------------------------------------------------------------------
+// ActionCell — komponen terpisah agar state isOpen tidak menyebabkan
+// Column array di-recreate
+// ---------------------------------------------------------------------------
+interface ActionCellProps {
+    row: StudentInvoiceType;
+    onGenerate: (row: StudentInvoiceType) => void;
+    onEdit: (row: StudentInvoiceType) => void;
+    onView: (invoiceId: number) => void;
+    onSendWa: (invoiceId: number) => void;
+}
+
+const ActionCell = React.memo(({ row, onGenerate, onEdit, onView, onSendWa }: ActionCellProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <Dropdown isOpen={isOpen} toggle={() => setIsOpen(!isOpen)}>
+            <DropdownToggle className="btn-action" color="light" size="xs">
+                <Icon name="more-h" />
+            </DropdownToggle>
+            <DropdownMenu>
+                <ul className="link-list-opt">
+                    {!row.invoice ? (
+                        <li>
+                            <DropdownItem tag="a" href="#links" onClick={(e) => {
+                                e.preventDefault();
+                                onGenerate(row);
+                            }}>
+                                <Icon name="reload" className="text-danger" /><span>Generate Tagihan</span>
+                            </DropdownItem>
+                        </li>
+                    ) : (
+                        <>
+                            {row.invoice.status !== 'PAID' && (
+                                <li>
+                                    <DropdownItem tag="a" href="#links" onClick={(e) => {
+                                        e.preventDefault();
+                                        onEdit(row);
+                                    }}>
+                                        <Icon name="pen" className="text-warning" /><span>Ubah Tagihan</span>
+                                    </DropdownItem>
+                                </li>
+                            )}
+                            <li>
+                                <DropdownItem tag="a" href="#links" onClick={(e) => {
+                                    e.preventDefault();
+                                    onView(row.invoice?.id as number);
+                                }}>
+                                    <Icon name="eye" className="text-info" /><span>Detail Tagihan</span>
+                                </DropdownItem>
+                            </li>
+                            <li>
+                                <DropdownItem tag="a" href="#links" onClick={(e) => {
+                                    e.preventDefault();
+                                    onSendWa(row.invoice?.id as number);
+                                }}>
+                                    <Icon name="whatsapp" className="text-success" /><span>Kirim Tagihan</span>
+                                </DropdownItem>
+                            </li>
+                        </>
+                    )}
+                </ul>
+            </DropdownMenu>
+        </Dropdown>
+    );
+});
+
+// ---------------------------------------------------------------------------
 
 const Invoice = () => {
     const year = useYearContext()
@@ -44,90 +112,7 @@ const Invoice = () => {
     const [invoice, setInvoice] = useState<InvoiceType>()
     const [sendingBuckWa, setSendingBuckWa] = useState(false)
     const navigate = useNavigate()
-    const Column: ColumnType<StudentInvoiceType>[] = [
-        {
-            name: "Nomor",
-            selector: (row) => row?.invoice?.reference,
-            sortable: false,
-            width: "140px"
-        },
-        {
-            name: "Nama",
-            selector: (row) => row.name,
-            sortable: false,
-            width: "350px"
-        },
-        {
-            name: "Wali",
-            selector: (row) => row.guardName,
-            sortable: false,
-        },
-        {
-            name: "Alamat",
-            selector: (row) => row.address,
-            sortable: false,
-        },
-        {
-            name: "Program",
-            selector: (row) => row?.program,
-            sortable: false,
-        },
-        {
-            name: "Jumlah",
-            selector: (row) => row.invoice?.amount && formatCurrency(row.invoice.amount),
-            sortable: false,
-        },
-        {
-            name: "Status",
-            selector: (row) => row.invoice?.status,
-            sortable: false,
-            cell: (row) => (
-                <Badge pill color={getStatusInvoice(row.invoice?.status)}>{row.invoice?.status}</Badge>
-            )
-        },
-        {
-            name: "Aksi",
-            selector: (row) => row?.userId,
-            sortable: false,
-            width: "150px",
-            cell: (row) => (
-                <ButtonGroup size="sm">
-                    {row.invoice ? row.invoice.status !== 'PAID' && (
-                        (
-                            <React.Fragment>
-                                <Button outline color="warning" onClick={() => {
-                                    setUser({ id: row.userId, address: row.address, period: row.period, verification: row.verification })
-                                    setInvoice(row.invoice)
-                                    setFormMode('edit')
-                                    setModal({ ...modal, form: true });
-                                }}>
-                                    <Icon name="pen" />
-                                </Button>
-                                <Button outline color="info" onClick={() => navigate(`/data-tagihan/${row.invoice?.id}/lihat`)}>
-                                    <Icon name="eye" />
-                                </Button>
-                            </React.Fragment>
-                        )
-                    ) : (
-                        <Button outline color="danger" onClick={() => {
-                            handleGenerate(row)
-                        }}>
-                            <Icon name="reload" />
-                        </Button>
-                    )}
-                    {row.invoice && (
-                        <Button outline color="success" onClick={() => {
-                            sendWhatsapp(row.invoice?.id).then(() => {
-                            });
-                        }}>
-                            <Icon name="whatsapp" />
-                        </Button>
-                    )}
-                </ButtonGroup>
-            ),
-        },
-    ];
-    const handleGenerate = (student: StudentInvoiceType) => {
+    const handleGenerate = useCallback((student: StudentInvoiceType) => {
         getProduct<ProductType>({ yearId: year?.id, institutionId: institution?.id })
             .then((resp) => {
                 let products: ProductType[]
@@ -157,10 +142,84 @@ const Invoice = () => {
                 setProducts(products)
                 setUser({ id: student.userId, address: student.address, period: student.period, verification: student.verification })
                 setFormMode('create')
-                setModal({ ...modal, form: true })
+                setModal(prev => ({ ...prev, form: true }))
             });
+    }, [year, institution]);
 
-    }
+    const handleEdit = useCallback((row: StudentInvoiceType) => {
+        setUser({ id: row.userId, address: row.address, period: row.period, verification: row.verification })
+        setInvoice(row.invoice)
+        setFormMode('edit')
+        setModal(prev => ({ ...prev, form: true }));
+    }, []);
+
+    const handleView = useCallback((invoiceId: number) => {
+        navigate(`/data-tagihan/${invoiceId}/lihat`);
+    }, [navigate]);
+
+    const handleSendWa = useCallback((invoiceId: number) => {
+        sendWhatsapp(invoiceId).then(() => {
+        });
+    }, []);
+
+    const Column = useMemo<ColumnType<StudentInvoiceType>[]>(() => [
+        {
+            name: "Nomor",
+            selector: (row) => row?.invoice?.reference,
+            sortable: true,
+            width: "140px"
+        },
+        {
+            name: "Nama",
+            selector: (row) => row.name,
+            sortable: true,
+            width: "350px"
+        },
+        {
+            name: "Wali",
+            selector: (row) => row.guardName,
+            sortable: false,
+        },
+        {
+            name: "Alamat",
+            selector: (row) => row.address,
+            sortable: false,
+        },
+        {
+            name: "Program",
+            selector: (row) => row?.program,
+            sortable: true,
+        },
+        {
+            name: "Jumlah",
+            selector: (row) => row.invoice?.amount && formatCurrency(row.invoice.amount),
+            sortable: false,
+        },
+        {
+            name: "Status",
+            selector: (row) => row.invoice?.status,
+            sortable: true,
+            cell: (row) => (
+                <Badge pill color={getStatusInvoice(row.invoice?.status)}>{row.invoice?.status}</Badge>
+            )
+        },
+        {
+            name: "",
+            selector: (row) => row?.userId,
+            sortable: false,
+            width: "80px",
+            cell: (row) => (
+                <ActionCell
+                    row={row}
+                    onGenerate={handleGenerate}
+                    onEdit={handleEdit}
+                    onView={handleView}
+                    onSendWa={handleSendWa}
+                />
+            ),
+        },
+    ], [handleGenerate, handleEdit, handleView, handleSendWa]);
+
     const handleSendBuckWA = async () => {
         if (invoices.length === 0) return;
         setSendingBuckWa(true);

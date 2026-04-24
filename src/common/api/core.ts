@@ -24,9 +24,28 @@ class apiCore {
         return this.handleResponse(response, notification);
     };
 
-    getFile = (url: string, params?: Record<string, string>): Promise<AxiosResponse> => {
+    getFile = async (url: string, params?: Record<string, string>): Promise<AxiosResponse> => {
         const queryString = params ? new URLSearchParams(params).toString() : '';
-        return axios.get(`${url}?${queryString}`, { responseType: 'blob' });
+        const response = await axios.get(`${url}?${queryString}`, {
+            responseType: 'blob',
+            headers: {
+                ...axios.defaults.headers.common,
+            },
+        }).catch(async (error: AxiosError) => {
+            // Blob responses can contain JSON error messages — parse and re-throw
+            if (error.response && error.response.data instanceof Blob) {
+                const text = await error.response.data.text();
+                try {
+                    const json = JSON.parse(text);
+                    throw new Error(json.statusMessage || json.message || 'Terjadi kesalahan');
+                } catch (parseErr) {
+                    if (parseErr instanceof SyntaxError) throw new Error(text);
+                    throw parseErr;
+                }
+            }
+            throw error;
+        });
+        return response as AxiosResponse;
     };
 
     getMultiple = (urls: string[], params?: Record<string, string>): Promise<AxiosResponse[]> => {

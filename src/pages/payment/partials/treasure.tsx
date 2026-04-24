@@ -165,7 +165,7 @@ const Treasure = () => {
             }).then((resp) => {
                 if (resp.status === 'success') {
                     setLoadData(true);
-                    setModal({...modal, cash: false });
+                    setModal({ ...modal, cash: false });
                     setSelectedStudent(null);
                     setPaymentAmount(0);
                 }
@@ -177,7 +177,7 @@ const Treasure = () => {
         if (!modal.cash) {
             fetchStudents();
         }
-        setModal({...modal, cash: !modal.cash });
+        setModal({ ...modal, cash: !modal.cash });
         setSelectedStudent(null);
         setPaymentAmount(0);
     };
@@ -197,8 +197,9 @@ const Treasure = () => {
             // Cleanup
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error downloading receipt:', error);
+            alert(error?.message || 'Gagal mengunduh bukti pembayaran.');
         }
     };
 

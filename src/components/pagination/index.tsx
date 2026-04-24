@@ -101,9 +101,9 @@ export const DataTablePagination: React.FC<DataTablePaginationProps> = ({
                             <Icon name="chevron-left" />
                         </PaginationLink>
                     </PaginationItem>
-                    {paginationItms?.map((item) => {
+                    {paginationItms?.map((item, index) => {
                         return (
-                            <PaginationItem disabled={isNaN(Number(item))} className={`d-none d-sm-block ${currentPage === item ? "active" : ""}`} key={item}>
+                            <PaginationItem disabled={isNaN(Number(item))} className={`d-none d-sm-block ${currentPage === item ? "active" : ""}`} key={index}>
                                 <PaginationLink
                                     tag="a"
                                     href="#pageitem"
