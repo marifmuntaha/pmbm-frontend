@@ -1,3 +1,5 @@
+import type {StudentPersonalType} from "@/types";
+
 export type PaymentChannelType = {
     group: string,
     code: string,
@@ -41,14 +43,16 @@ export type PaymentModalType = {
 
 export type PaymentType = {
     id: number;
-    userId: number;
-    invoiceId: number;
+    yearId?: number;
+    institutionId?: number;
     name: string;
     reference: string;
     method: number;
-    status: number;
+    status: string;
     transaction_id: string;
     transaction_time: string;
     amount: number;
     created_at: string;
+    deposited: number;
+    personal: Partial<StudentPersonalType>
 }

@@ -1,5 +1,5 @@
 import { apiCore } from "@/common/api/core";
-import type { ApiResponseInterface, InvoiceType } from "@/types";
+import type { ApiResponseInterface, PaymentType } from "@/types";
 
 const api = new apiCore()
 
@@ -16,13 +16,13 @@ async function store(params: Record<string, any> = {}) {
 }
 
 async function show(params: Record<string, any> = {}) {
-    const baseUrl = `/invoice/${params.id}`
-    return await api.get<InvoiceType>(baseUrl, params, true).then((resp) => resp.result);
+    const baseUrl = `/payment/${params.id}`
+    return await api.get<PaymentType>(baseUrl, params, true).then((resp) => resp.result);
 }
 
-async function update(params: Record<string, any> = {}, notification: boolean = true): Promise<void> {
-    const baseUrl = `/invoice/${params.id}`
-    return await api.update<InvoiceType>(baseUrl, params, notification).then((resp) => resp);
+async function update(params: Record<string, any> = {}, notification: boolean = true): Promise<ApiResponseInterface<PaymentType>> {
+    const baseUrl = `/payment/${params.id}`
+    return await api.update<PaymentType>(baseUrl, params, notification).then((resp) => resp);
 }
 
 async function destroy(id: number | undefined) {

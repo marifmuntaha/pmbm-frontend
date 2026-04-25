@@ -77,6 +77,7 @@ import IntegrationTest from "@/pages/dashboard/test";
 import AnnouncementPage from "@/pages/announcement";
 import Whatsapp from "@/pages/setting/whatsapp";
 import InvoiceReportItem from "@/pages/report/invoiceItem";
+import Cashflow from "@/pages/cashflow";
 
 const Router: React.FC = () => {
     return (
@@ -126,6 +127,7 @@ const Router: React.FC = () => {
                                 <Route path="/data-tagihan/:id/lihat" element={<InvoiceDetail />} />
                                 <Route path="/pembayaran" element={<Payment />} />
                                 <Route path="/pembayaran/:id/lihat" element={<PaymentDetail />} />
+                                <Route path="/arus-kas" element={<Cashflow />} />
                                 <Route path="/cetak-kartu" element={<Print />} />
                                 <Route path="/laporan/tagihan/siswa" element={<InvoiceReportStudent />} />
                                 <Route path="/laporan/tagihan/item" element={<InvoiceReportItem />} />

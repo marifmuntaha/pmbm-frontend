@@ -1,0 +1,207 @@
+import React, {useCallback, useEffect, useState} from "react";
+import Head from "@/layout/head";
+import {
+    Block,
+    BlockBetween,
+    BlockHead,
+    BlockHeadContent,
+    BlockTitle,
+    Button,
+    Icon,
+    PreviewCard, ReactDataTable,
+    RSelect
+} from "@/components";
+import Content from "@/layout/content";
+import { get as getTransaction } from "@/common/api/institution/transaction"
+import { get as getAccount } from "@/common/api/institution/account"
+import type {ColumnType, OptionsType, TransactionType} from "@/types";
+import {useYearContext} from "@/common/hooks/useYearContext";
+import {useAuthContext} from "@/common/hooks/useAuthContext";
+import Partial from "@/pages/cashflow/partial"
+import {Col, FormGroup, Label, Row} from "reactstrap";
+import DatePicker from "react-datepicker";
+import moment from "moment/moment";
+
+const Cashflow = () => {
+    const year = useYearContext();
+    const { user } = useAuthContext();
+    const [sm, updateSm] = useState(false)
+    const [modal, setModal] = useState(false)
+    const [loadData, setLoadData] = useState(true)
+    const [transactions, setTransactions] = useState<TransactionType[]>([])
+    const [accountOptions, setAccountOptions] = useState<OptionsType[]>()
+    const [accountSelected, setAccountSelected] = useState<number>()
+    const [typeSelected, setTypeSelected] = useState<number>()
+    const [startSelected, setStartSelected] = useState<Date|null>(null)
+    const [endSelected, setEndSelected] = useState<Date|null>(null)
+    const typeOptions: OptionsType[] = [
+        { value: 0, label: "Semua Transaksi" },
+        { value: 1, label: "Transaksi Masuk" },
+        { value: 2, label: "Transaksi Keluar" }
+    ]
+    const params = useCallback(() => {
+        const p : any = {
+            type: 'datatable',
+            yearId: year?.id,
+            institutionId: user?.institutionId
+        }
+        if (accountSelected) p.account = accountSelected
+        if (typeSelected) p.type = typeSelected
+        if (startSelected) p.start = moment(startSelected).format("YYYY-MM-DD")
+        if (endSelected) p.end = moment(endSelected).format("YYYY-MM-DD")
+        return p;
+    }, [year, accountSelected, typeSelected, user, startSelected, endSelected]);
+    const Column: ColumnType<TransactionType>[] = [
+        {
+            name: "Tanggal",
+            selector: (row) => row?.created_at,
+            sortable: false,
+            width: "140px"
+        },
+        {
+            name: "Keterangan",
+            selector: (row) => row.name,
+            sortable: false,
+            width: "140px"
+        },
+        {
+            name: "Kredit",
+            selector: (row) => row?.credit,
+            sortable: false,
+            width: "140px"
+        },
+        {
+            name: "Debit",
+            selector: (row) => row?.debit,
+            sortable: false,
+            width: "140px"
+        },
+        {
+            name: "Saldo",
+            selector: (row) => row?.balance,
+            sortable: false,
+            width: "140px"
+        },
+    ]
+
+    useEffect(() => {
+        const fetchData = () => {
+            getAccount<OptionsType>({type: 'select', institutionId: user?.institutionId}).then((resp) => {
+                setAccountOptions([{value: 0, label: 'Semua Rekening'}, ...resp]);
+            })
+        }
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const fetchData = () => {
+            getTransaction<TransactionType>(params()).then((resp) => {
+                setTransactions(resp)
+            }). finally(() => setLoadData(false))
+        }
+        fetchData()
+    }, [loadData, params])
+    return (
+        <React.Fragment>
+            <Head title="Data Tagihan" />
+            <Content>
+                <Block size="lg">
+                    <BlockHead>
+                        <BlockBetween>
+                            <BlockHeadContent>
+                                <BlockTitle tag="h5">Arus Kas</BlockTitle>
+                                <p>
+                                    Data Arus Kas
+                                </p>
+                            </BlockHeadContent>
+                            <BlockHeadContent>
+                                <div className="toggle-wrap nk-block-tools-toggle">
+                                    <Button
+                                        className={`btn-icon btn-trigger toggle-expand me-n1 ${sm ? "active" : ""}`}
+                                        onClick={() => updateSm(!sm)}
+                                    >
+                                        <Icon name="menu-alt-r" />
+                                    </Button>
+                                    <div className="toggle-expand-content" style={{ display: sm ? "block" : "none" }}>
+                                        <ul className="nk-block-tools g-3">
+                                            <li>
+                                                <Button
+                                                    color="success"
+                                                    size="sm"
+                                                    onClick={() => setModal(true)}
+                                                >
+                                                    <Icon name="plus" />
+                                                    <span>TAMBAH</span>
+                                                </Button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </BlockHeadContent>
+                        </BlockBetween>
+                    </BlockHead>
+                    <PreviewCard>
+                        <Row className="gy-4">
+                            <Col sm={3}>
+                                <FormGroup>
+                                    <Label>Rekening</Label>
+                                    <RSelect
+                                        options={accountOptions}
+                                        value={accountOptions?.find(opt => opt.value == accountSelected) || { value: 0, label: "Semua Rekening" }}
+                                        onChange={(opt) => setAccountSelected(opt?.value || 0)}
+                                        placeholder="Pilih Rekening..."
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col sm={3}>
+                                <FormGroup>
+                                    <Label>Jenis Transaksi</Label>
+                                    <RSelect
+                                        options={typeOptions}
+                                        value={typeOptions.find(opt => opt.value == typeSelected) || { value: 0, label: "Semua Transaksi" }}
+                                        onChange={(opt) => setTypeSelected(opt?.value || 0)}
+                                        placeholder="Pilih Transaksi..."
+                                    />
+                                </FormGroup>
+                            </Col>
+                            <Col sm={3}>
+                                <FormGroup>
+                                    <Label>Tanggal Awal</Label>
+                                    <div className="form-control-wrap">
+                                        <DatePicker
+                                            locale="id"
+                                            selected={startSelected}
+                                            onChange={(date) => setStartSelected(date)}
+                                            dateFormat={"dd/MM/yyyy"}
+                                            className="form-control date-picker"
+                                            placeholderText="Pilih Tanggal"
+                                        />
+                                    </div>
+                                </FormGroup>
+                            </Col>
+                            <Col sm={3}>
+                                <FormGroup>
+                                    <Label>Tanggal Akhir</Label>
+                                    <div className="form-control-wrap">
+                                        <DatePicker
+                                            locale="id"
+                                            selected={endSelected}
+                                            onChange={(date) => setEndSelected(date)}
+                                            dateFormat={"dd/MM/yyyy"}
+                                            className="form-control date-picker"
+                                            placeholderText="Pilih Tanggal"
+                                        />
+                                    </div>
+                                </FormGroup>
+                            </Col>
+                        </Row>
+                        <ReactDataTable data={transactions} columns={Column} pagination progressPending={loadData} />
+                    </PreviewCard>
+                </Block>
+                <Partial modal={modal} setModal={setModal} setLoadData={setLoadData} />
+            </Content>
+        </React.Fragment>
+    )
+}
+
+export default Cashflow

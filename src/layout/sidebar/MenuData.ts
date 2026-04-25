@@ -155,6 +155,11 @@ const menuTreasurer = [
         link: "/pembayaran",
     },
     {
+        icon: "money",
+        text: "Arus Kas",
+        link: "/arus-kas",
+    },
+    {
         icon: "file-text",
         text: "Laporan",
         subMenu: [

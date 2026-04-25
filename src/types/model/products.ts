@@ -7,7 +7,7 @@ export type ProductType = {
     name: string;
     surname: string;
     price: number|null;
-    gender: number|null;
+    gender?: number;
     programId: number|null;
     isBoarding: number|null;
     boardingId: number|null;

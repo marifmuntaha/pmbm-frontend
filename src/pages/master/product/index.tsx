@@ -33,7 +33,7 @@ const Product = () => {
         name: '',
         surname: '',
         price: null,
-        gender: null,
+        gender: undefined,
         isBoarding: null,
         programId: null,
         boardingId: null
@@ -57,7 +57,7 @@ const Product = () => {
         },
         {
             name: "JK",
-            selector: (row) => row.gender === 0 ? 'Semua' : getGender(row.gender),
+            selector: (row) => row.gender === 0 ? 'Semua' : getGender(row?.gender),
             sortable: false,
         },
         {

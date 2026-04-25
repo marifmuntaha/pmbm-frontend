@@ -11,6 +11,7 @@ import {
     Icon,
     PreviewCard,
     ReactDataTable,
+    RToast,
 } from "@/components";
 import { useYearContext } from "@/common/hooks/useYearContext";
 import { useInstitutionContext } from "@/common/hooks/useInstitutionContext";
@@ -25,34 +26,26 @@ import {
     FormGroup,
     Label,
     ButtonGroup,
-    Spinner
+    Spinner,
+    Card
 } from "reactstrap";
 import { formatCurrency, formatNumber, getPaymentStatusColor, getPaymentStatusText } from "@/helpers";
 import { studentInvoice } from "@/common/api/student";
-import { cash as cashPayment, get as getPayment, update as updatePayment, sendWhatsapp } from "@/common/api/payment";
+import { cash as cashPayment, get as getPayment, sendWhatsapp } from "@/common/api/payment";
 import { generateReceipt } from "@/common/api/payment/receipt";
-import type { ColumnType, StudentInvoiceType } from "@/types";
+import type { ColumnType, PaymentType, StudentInvoiceType } from "@/types";
 import Select from "react-select";
-
-type PaymentType = {
-    id: number;
-    name: string;
-    reference: string;
-    method: number;
-    status: string;
-    transaction_id: string;
-    transaction_time: string;
-    amount: number;
-    created_at: string;
-    deposited: number;
-}
 
 const Treasure = () => {
     const year = useYearContext();
     const institution = useInstitutionContext();
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
-    const [loading, setLoading] = useState<number|undefined|boolean>(false);
+    const [loading, setLoading] = useState({
+        view: 0,
+        download: 0,
+        whatsapp: 0
+    });
     const [payments, setPayments] = useState<PaymentType[]>([]);
     const [students, setStudents] = useState<StudentInvoiceType[]>([]);
     const [sendingBuckWa, setSendingBuckWa] = useState(false)
@@ -130,31 +123,6 @@ const Treasure = () => {
                     >
                         <Icon name="whatsapp" />
                     </Button>
-                    {item.deposited !== 1 && (
-                        <Button
-                            outline
-                            color="warning"
-                            onClick={async () => {
-                                setLoading(item.id);
-                                const paymentData: PaymentType = {
-                                    id: item.id,
-                                    name: item.name,
-                                    reference: item.reference,
-                                    method: item.method,
-                                    status: item.status,
-                                    transaction_id: item.transaction_id,
-                                    transaction_time: item.transaction_time,
-                                    amount: item.amount,
-                                    created_at: item.created_at,
-                                    deposited: 1
-                                }
-                                await updatePayment(paymentData, false);
-                            }}
-                            title="Tandai Setor ke-pelopor"
-                        >
-                            <Icon name="money" />
-                        </Button>
-                    )}
                 </ButtonGroup>
             )
         },
@@ -162,7 +130,7 @@ const Treasure = () => {
 
     useEffect(() => {
         if (loadData && year?.id && institution?.id) {
-            getPayment<PaymentType>({ yearId: year.id, institutionId: institution.id })
+            getPayment<PaymentType>({ type: 'datatable', yearId: year.id, institutionId: institution.id })
                 .then((resp) => {
                     setPayments(resp);
                 })
@@ -213,7 +181,6 @@ const Treasure = () => {
         try {
             const blob = await generateReceipt(paymentId, window.location.origin);
 
-            // Create download link
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -295,14 +262,84 @@ const Treasure = () => {
                             </BlockHeadContent>
                         </BlockBetween>
                     </BlockHead>
-                    <PreviewCard>
-                        <ReactDataTable
-                            data={payments}
-                            columns={Column}
-                            pagination
-                            progressPending={loadData}
-                        />
-                    </PreviewCard>
+                    <Row className="gy-4">
+                        <Col md={4}>
+                            <Card className="card-bordered border-primary">
+                                <div className="card-inner">
+                                    <div className="card-title-group align-start mb-2">
+                                        <div className="card-title">
+                                            <h6 className="title text-soft">TOTAL PEMBAYARAN</h6>
+                                        </div>
+                                        <div className="card-tools">
+                                            <Icon name="coins" className="text-primary fs-4" />
+                                        </div>
+                                    </div>
+                                    <div className="align-end flex-wrap g-3 justify-between">
+                                        <div className="data">
+                                            <div className="amount fw-bold">Rp. {formatCurrency(payments.reduce((acc, payment) => {
+                                                return acc + payment.amount;
+                                            }, 0))}</div>
+                                            <div className="info">Total Transaksi</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        </Col>
+                        <Col md={4}>
+                            <Card className="card-bordered border-warning">
+                                <div className="card-inner">
+                                    <div className="card-title-group align-start mb-2">
+                                        <div className="card-title">
+                                            <h6 className="title text-soft">PEMBAYARAN CASH</h6>
+                                        </div>
+                                        <div className="card-tools">
+                                            <Icon name="money" className="text-warning fs-4" />
+                                        </div>
+                                    </div>
+                                    <div className="align-end flex-wrap g-3 justify-between">
+                                        <div className="data">
+                                            <div className="amount fw-bold">Rp. {formatCurrency(payments.filter((payment) => payment.method === 1).reduce((acc, payment) => {
+                                                return acc + payment.amount;
+                                            }, 0))}</div>
+                                            <div className="info">Total Transaksi</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        </Col>
+                        <Col md={4}>
+                            <Card className="card-bordered border-info">
+                                <div className="card-inner">
+                                    <div className="card-title-group align-start mb-2">
+                                        <div className="card-title">
+                                            <h6 className="title text-soft">PEMBAYARAN ONLINE</h6>
+                                        </div>
+                                        <div className="card-tools">
+                                            <Icon name="money" className="text-info fs-4" />
+                                        </div>
+                                    </div>
+                                    <div className="align-end flex-wrap g-3 justify-between">
+                                        <div className="data">
+                                            <div className="amount fw-bold">Rp. {formatCurrency(payments.filter((payment) => payment.method === 2).reduce((acc, payment) => {
+                                                return acc + payment.amount;
+                                            }, 0))}</div>
+                                            <div className="info">Total Transaksi</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        </Col>
+                        <Col md={12}>
+                            <PreviewCard>
+                                <ReactDataTable
+                                    data={payments}
+                                    columns={Column}
+                                    pagination
+                                    progressPending={loadData}
+                                />
+                            </PreviewCard>
+                        </Col>
+                    </Row>
                 </Block>
 
                 <Modal isOpen={modal.cash} toggle={toggleModal}>

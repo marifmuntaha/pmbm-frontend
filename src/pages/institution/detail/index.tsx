@@ -22,6 +22,7 @@ import Activity from "./activity";
 import Program from "@/pages/institution/detail/program";
 import Period from "@/pages/institution/detail/period";
 import { useAuthContext } from "@/common/hooks/useAuthContext";
+import Account from "@/pages/institution/detail/account";
 
 const InstitutionDetails: React.FC = () => {
     const [institution, setInstitution] = useState<InstitutionType>();
@@ -186,6 +187,13 @@ const InstitutionDetails: React.FC = () => {
                         <Row className="gy-5">
                             <Col md={8}>
                                 <Period />
+                            </Col>
+                        </Row>
+                    </Block>
+                    <Block size="lg">
+                        <Row className="gy-5">
+                            <Col md={8}>
+                                <Account />
                             </Col>
                         </Row>
                     </Block>

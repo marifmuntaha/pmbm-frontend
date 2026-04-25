@@ -9,6 +9,10 @@ import {
     RSelect,
 } from "@/components";
 import { testWhatsAppMessage, testWhatsAppPdf, testMidtrans, testPdfSignature, testMidtransCallback } from "@/common/api/integrationTest";
+import { store as storeTransaction } from "@/common/api/institution/transaction"
+import { get as getPayments } from "@/common/api/payment"
+import { get as getAccount } from "@/common/api/institution/account"
+import type {InstitutionAccountType, PaymentType, TransactionType} from "@/types";
 
 const IntegrationTest = () => {
     const [phone, setPhone] = useState<string>("");
@@ -153,6 +157,25 @@ const IntegrationTest = () => {
         }
     };
 
+    const handleSync = () => {
+        getPayments<PaymentType>({yearId: 2, institutionId: 3}).then((resp) => {
+            resp.map((item) => {
+                getAccount<InstitutionAccountType>({institutionId: item.institutionId, method: item.method}).then((account) => {
+                    const transactionData: TransactionType = {
+                        yearId: 1,
+                        institutionId: 3,
+                        accountId: account[0].id,
+                        paymentId: item.id,
+                        name: `Pembayaran ${item.method === 1 ? "Tunai" : "Online" } a.n ${item.personal.name} (${item.transaction_id})`,
+                        credit: 0,
+                        debit: item.amount
+                    }
+                    storeTransaction(transactionData, false);
+                });
+            })
+        })
+    }
+
     return (
         <React.Fragment>
             <Head title="Test Integrasi" />
@@ -213,17 +236,21 @@ const IntegrationTest = () => {
                                         </div>
                                     </div>
                                     <div className="form-group">
-                                        <Button color="success" onClick={handleTestMessage} disabled={loadingMessage || loadingPdf}>
+                                        <Button color="success" className="col-md-3 m-2" onClick={handleTestMessage} disabled={loadingMessage || loadingPdf}>
                                             {loadingMessage ? <Spinner size="sm" /> : <Icon name="send" />}
                                             <span className="ms-1">Kirim Pesan</span>
                                         </Button>
-                                        <Button color="info" onClick={handleTestPdf} disabled={loadingMessage || loadingPdf}>
+                                        <Button color="info" className="col-md-3 m-2" onClick={handleTestPdf} disabled={loadingMessage || loadingPdf}>
                                             {loadingPdf ? <Spinner size="sm" /> : <Icon name="file-pdf" />}
                                             <span className="ms-1">Kirim PDF</span>
                                         </Button>
-                                        <Button color="primary" outline onClick={handleTestSignature} disabled={loadingSignature}>
+                                        <Button color="primary" className="col-md-3 m-2" outline onClick={handleTestSignature} disabled={loadingSignature}>
                                             {loadingSignature ? <Spinner size="sm" /> : <Icon name="pen" />}
                                             <span className="ms-1">Sign PDF Test</span>
+                                        </Button>
+                                        <Button color="primary" className="m-2" outline onClick={handleSync} disabled={loadingSignature}>
+                                            {loadingSignature ? <Spinner size="sm" /> : <Icon name="reload" />}
+                                            <span className="ms-1">Sinkron Pembayaran Ke Arus Kas</span>
                                         </Button>
                                     </div>
                                 </CardBody>

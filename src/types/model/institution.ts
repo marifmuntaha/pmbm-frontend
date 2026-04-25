@@ -97,3 +97,29 @@ export type InstitutionPeriodFormType = {
     start: Date|undefined,
     end: Date|undefined,
 }
+
+export type InstitutionAccountType = {
+    id?: number|undefined;
+    institutionId: number|undefined;
+    name: string,
+    credit?: number,
+    debit?: number,
+    balance?: number,
+    method: number,
+}
+
+export type TransactionType = {
+    id?: number|undefined;
+    yearId?: number|undefined;
+    institutionId?: number|undefined;
+    accountId?: number|undefined;
+    paymentId?: number|undefined;
+    name: string,
+    credit?: number,
+    debit?: number,
+    balance?: number,
+    createdBy?: string,
+    updatedBy?: string,
+    created_at?: string,
+    updated_at?: string,
+}
