@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Head from "@/layout/head";
 import {
     Block,
@@ -14,13 +14,14 @@ import {
 import Content from "@/layout/content";
 import { get as getTransaction } from "@/common/api/institution/transaction"
 import { get as getAccount } from "@/common/api/institution/account"
-import type {ColumnType, OptionsType, TransactionType} from "@/types";
-import {useYearContext} from "@/common/hooks/useYearContext";
-import {useAuthContext} from "@/common/hooks/useAuthContext";
+import type { ColumnType, OptionsType, TransactionType } from "@/types";
+import { useYearContext } from "@/common/hooks/useYearContext";
+import { useAuthContext } from "@/common/hooks/useAuthContext";
 import Partial from "@/pages/cashflow/partial"
-import {Col, FormGroup, Label, Row} from "reactstrap";
+import { Col, FormGroup, Label, Row } from "reactstrap";
 import DatePicker from "react-datepicker";
 import moment from "moment/moment";
+import {formatCurrency} from "@/helpers";
 
 const Cashflow = () => {
     const year = useYearContext();
@@ -32,15 +33,15 @@ const Cashflow = () => {
     const [accountOptions, setAccountOptions] = useState<OptionsType[]>()
     const [accountSelected, setAccountSelected] = useState<number>()
     const [typeSelected, setTypeSelected] = useState<number>()
-    const [startSelected, setStartSelected] = useState<Date|null>(null)
-    const [endSelected, setEndSelected] = useState<Date|null>(null)
+    const [startSelected, setStartSelected] = useState<Date | null>(null)
+    const [endSelected, setEndSelected] = useState<Date | null>(null)
     const typeOptions: OptionsType[] = [
         { value: 0, label: "Semua Transaksi" },
         { value: 1, label: "Transaksi Masuk" },
         { value: 2, label: "Transaksi Keluar" }
     ]
     const params = useCallback(() => {
-        const p : any = {
+        const p: any = {
             type: 'datatable',
             yearId: year?.id,
             institutionId: user?.institutionId
@@ -54,40 +55,40 @@ const Cashflow = () => {
     const Column: ColumnType<TransactionType>[] = [
         {
             name: "Tanggal",
-            selector: (row) => row?.created_at,
+            selector: (row) => moment(row?.created_at).format("DD MMMM YYYY HH:mm:ss"),
             sortable: false,
-            width: "140px"
         },
         {
             name: "Keterangan",
             selector: (row) => row.name,
             sortable: false,
-            width: "140px"
+            width: "600px"
         },
         {
             name: "Kredit",
-            selector: (row) => row?.credit,
+            selector: (row) => row.credit !== 0 ? formatCurrency(row.credit) : "",
             sortable: false,
-            width: "140px"
+            right: true
+
         },
         {
             name: "Debit",
-            selector: (row) => row?.debit,
+            selector: (row) => row.debit !== 0 ? formatCurrency(row?.debit) : "",
             sortable: false,
-            width: "140px"
+            right: true
         },
         {
             name: "Saldo",
-            selector: (row) => row?.balance,
+            selector: (row) => row.balance !== 0 ? formatCurrency(row?.balance) : "",
             sortable: false,
-            width: "140px"
+            right: true,
         },
     ]
 
     useEffect(() => {
         const fetchData = () => {
-            getAccount<OptionsType>({type: 'select', institutionId: user?.institutionId}).then((resp) => {
-                setAccountOptions([{value: 0, label: 'Semua Rekening'}, ...resp]);
+            getAccount<OptionsType>({ type: 'select', institutionId: user?.institutionId }).then((resp) => {
+                setAccountOptions([{ value: 0, label: 'Semua Rekening' }, ...resp]);
             })
         }
         fetchData();
@@ -97,7 +98,7 @@ const Cashflow = () => {
         const fetchData = () => {
             getTransaction<TransactionType>(params()).then((resp) => {
                 setTransactions(resp)
-            }). finally(() => setLoadData(false))
+            }).finally(() => setLoadData(false))
         }
         fetchData()
     }, [loadData, params])

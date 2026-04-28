@@ -158,19 +158,33 @@ const IntegrationTest = () => {
     };
 
     const handleSync = () => {
-        getPayments<PaymentType>({yearId: 2, institutionId: 3}).then((resp) => {
+        getPayments<PaymentType>({yearId: 2, institutionId: 3, sort: 'asc'}).then((resp) => {
             resp.map((item) => {
                 getAccount<InstitutionAccountType>({institutionId: item.institutionId, method: item.method}).then((account) => {
                     const transactionData: TransactionType = {
-                        yearId: 1,
+                        yearId: 2,
                         institutionId: 3,
                         accountId: account[0].id,
                         paymentId: item.id,
                         name: `Pembayaran ${item.method === 1 ? "Tunai" : "Online" } a.n ${item.personal.name} (${item.transaction_id})`,
                         credit: 0,
-                        debit: item.amount
+                        debit: item.amount,
+                        created_at: item.created_at,
+                        updated_at: item.updated_at
                     }
                     storeTransaction(transactionData, false);
+                    if (item.method === 2) {
+                        const costData: TransactionType = {
+                            yearId: 2,
+                            institutionId: 3,
+                            accountId: account[0].id,
+                            paymentId: item.id,
+                            name: `Biaya Transaksi via Midtrans (${item.transaction_id})`,
+                            credit: 4500,
+                            debit: 0
+                        }
+                        storeTransaction(costData, false);
+                    }
                 });
             })
         })

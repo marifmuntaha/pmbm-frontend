@@ -8,6 +8,7 @@ export interface ColumnType<T> {
     width?: string;
     right?: boolean;
     center?: boolean;
+    style?: any
 }
 
 export type ModalInvoiceType = {

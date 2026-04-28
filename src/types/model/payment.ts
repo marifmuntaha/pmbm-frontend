@@ -53,6 +53,7 @@ export type PaymentType = {
     transaction_time: string;
     amount: number;
     created_at: string;
+    updated_at: string;
     deposited: number;
     personal: Partial<StudentPersonalType>
 }

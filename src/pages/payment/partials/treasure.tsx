@@ -11,7 +11,6 @@ import {
     Icon,
     PreviewCard,
     ReactDataTable,
-    RToast,
 } from "@/components";
 import { useYearContext } from "@/common/hooks/useYearContext";
 import { useInstitutionContext } from "@/common/hooks/useInstitutionContext";
@@ -41,11 +40,6 @@ const Treasure = () => {
     const institution = useInstitutionContext();
     const [sm, updateSm] = useState(false);
     const [loadData, setLoadData] = useState(true);
-    const [loading, setLoading] = useState({
-        view: 0,
-        download: 0,
-        whatsapp: 0
-    });
     const [payments, setPayments] = useState<PaymentType[]>([]);
     const [students, setStudents] = useState<StudentInvoiceType[]>([]);
     const [sendingBuckWa, setSendingBuckWa] = useState(false)

@@ -140,6 +140,22 @@ export const ReactDataTable = <T extends object>({
         };
     }, []);
 
+    // Transform columns: wrap `name` as right-aligned JSX for columns with right:true
+    // react-data-table-component v7 applies `right` only to data cells, not headers.
+    const normalizedColumns = columns.map((col) => {
+        if (col.right && typeof col.name === 'string') {
+            return {
+                ...col,
+                name: (
+                    <div style={{ width: '100%', textAlign: 'right' }}>
+                        {col.name}
+                    </div>
+                ),
+            };
+        }
+        return col;
+    });
+
     return (
         <div className={`dataTables_wrapper dt-bootstrap4 no-footer ${className ? className : ""}`}>
             <Row className={`justify-between g-2 ${actions ? "with-export" : ""}`}>
@@ -183,7 +199,7 @@ export const ReactDataTable = <T extends object>({
             </Row>
             <DataTable
                 data={tableData}
-                columns={columns}
+                columns={normalizedColumns}
                 className={className}
                 selectableRows={selectableRows}
                 expandableRows={mobileView}
