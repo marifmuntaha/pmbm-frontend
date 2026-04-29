@@ -122,4 +122,13 @@ export type TransactionType = {
     updatedBy?: string,
     created_at?: string,
     updated_at?: string,
+    account?: Partial<InstitutionAccountType>
+}
+
+export type TransactionDashboardType = {
+    balance: number,
+    credit: number,
+    debit: number,
+    cash: number,
+    nonCash: number,
 }

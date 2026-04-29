@@ -1,5 +1,5 @@
 import {apiCore} from "@/common/api/core";
-import type {ApiResponseInterface, TransactionType} from "@/types";
+import type {ApiResponseInterface, TransactionType} from "src/types";
 
 const api = new apiCore()
 
@@ -25,4 +25,11 @@ async function destroy(id: number | undefined) {
     return await api.delete(baseUrl, true).then((resp) => resp);
 }
 
-export {get, store, update, destroy}
+async function dashboard <T>(params: Record<string, any> = {}) {
+    const baseUrl = '/dashboard/transaction'
+    const result = await api.get<T>(baseUrl, params, false)
+        .then((value: ApiResponseInterface<T>) => value.result);
+    return result !== undefined ? result : undefined;
+}
+
+export {get, store, update, destroy, dashboard}

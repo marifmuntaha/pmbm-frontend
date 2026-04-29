@@ -16,7 +16,7 @@ import { useYearContext } from "@/common/hooks/useYearContext";
 import { Button, FormGroup, Label, Row, Col } from "reactstrap";
 import { formatCurrency } from "@/helpers";
 import { getPaymentReport, exportPaymentReport } from "@/common/api/report";
-import type { ColumnType, OptionsType } from "@/types";
+import type {ColumnType, InvoiceType, OptionsType, StudentPersonalType} from "@/types";
 import moment from "moment";
 import DatePicker, { registerLocale } from "react-datepicker";
 import { id } from "date-fns/locale/id";
@@ -27,8 +27,8 @@ registerLocale('id', id);
 
 type PaymentReportType = {
     id: number;
-    name: string;
-    reference: string;
+    personal: Partial<StudentPersonalType>;
+    invoice: Partial<InvoiceType>;
     method: number;
     status: number;
     transaction_id: string;
@@ -62,12 +62,12 @@ const PaymentReport = () => {
         },
         {
             name: "Siswa",
-            selector: (row) => row.name,
+            selector: (row) => row.personal.name,
             sortable: true,
         },
         {
             name: "Invoice",
-            selector: (row) => row.reference || '-',
+            selector: (row) => row.invoice.reference || '-',
             sortable: false,
         },
         {
@@ -97,11 +97,6 @@ const PaymentReport = () => {
         fetchData();
     }, []);
 
-    useEffect(() => {
-        if (user?.institutionId) {
-            setInstitutionId(user.institutionId);
-        }
-    }, [user]);
 
     const handlePrint = () => {
         const params: string[] = [];
@@ -125,7 +120,6 @@ const PaymentReport = () => {
 
     useEffect(() => {
         if (year?.id) {
-            setLoadData(true);
             const params: Record<string, any> = { yearId: year.id };
             if (institutionId) params.institutionId = institutionId;
             if (methodFilter) params.method = methodFilter;

@@ -13,9 +13,10 @@ async function testWhatsAppPdf(phone: string): Promise<ApiResponseInterface<any>
     return await api.create(baseUrl, { phone }, true);
 }
 
-async function testMidtrans(): Promise<ApiResponseInterface<any>> {
+async function testMidtrans(invoiceReference?: string): Promise<ApiResponseInterface<any>> {
     const baseUrl = '/system/test/midtrans';
-    return await api.create(baseUrl, {}, true);
+    const payload = invoiceReference ? { invoice_reference: invoiceReference } : {};
+    return await api.create(baseUrl, payload, true);
 }
 
 async function testPdfSignature(): Promise<ApiResponseInterface<any>> {
