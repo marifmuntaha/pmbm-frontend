@@ -79,7 +79,7 @@ const Major: React.FC = () => {
 
     useEffect(() => {
         if (loadData) {
-            getYear({ list: 'table' })
+            getYear<YearType>({ list: 'table' })
                 .then((resp) => setYears(resp))
                 .finally(() => setLoadData(false));
         }

@@ -106,7 +106,7 @@ const RegistrationProof = React.forwardRef<HTMLDivElement, RegistrationProofProp
                         <tr>
                             <td></td>
                             <td>Jenis Kelamin</td>
-                            <td>{getGender(data?.personal ? data?.personal.gender : null)}</td>
+                            <td>{getGender(data?.personal ? data?.personal.gender : undefined)}</td>
                         </tr>
                         <tr>
                             <td></td>

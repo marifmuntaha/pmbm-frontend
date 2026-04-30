@@ -66,7 +66,7 @@ const Partial = ({ modal, setModal, product, setProduct, setLoadData }: PartialP
             name: '',
             surname: '',
             price: null,
-            gender: null,
+            gender: undefined,
             programId: null,
             boardingId: null,
             isBoarding: null,
