@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from "react";
-import {Card, CardBody, CardTitle, Row, Col, Spinner, Alert} from "reactstrap";
+import React, { useEffect, useState } from "react";
+import { Card, CardBody, CardTitle, Row, Col, Spinner, Alert } from "reactstrap";
 import Head from "@/layout/head";
 import Content from "@/layout/content";
 import {
@@ -14,7 +14,7 @@ import { get as getPayments } from "@/common/api/payment"
 import { get as getAccount } from "@/common/api/institution/account"
 import { get as getInstitution } from "@/common/api/institution"
 import { get as getyear } from "@/common/api/master/year"
-import type {InstitutionAccountType, OptionsType, PaymentType, TransactionType} from "@/types";
+import type { InstitutionAccountType, OptionsType, PaymentType, TransactionType } from "@/types";
 
 const IntegrationTest = () => {
     const [phone, setPhone] = useState<string>("");
@@ -101,44 +101,42 @@ const IntegrationTest = () => {
         }
     };
 
-    const handleSync = () => {
-        getPayments<PaymentType>({ yearId: yearSelected, institutionId: institutionSelected, sort: 'asc' }).then((resp) => {
-            resp.map((item) => {
-                getAccount<InstitutionAccountType>({ institutionId: item.institutionId, method: item.method }).then((account) => {
-                    const transactionData: TransactionType = {
-                        yearId: yearSelected,
-                        institutionId: institutionSelected,
-                        accountId: account[0].id,
-                        paymentId: item.id,
-                        name: `Pembayaran ${item.method === 1 ? "Tunai" : "Online"} a.n ${item.personal.name} (${item.transaction_id})`,
-                        credit: 0,
-                        debit: item.amount,
-                        created_at: item.created_at,
-                        updated_at: item.updated_at
-                    }
-                    storeTransaction(transactionData, false);
-                    if (item.method === 2) {
-                        const costData: TransactionType = {
-                            yearId: yearSelected,
-                            institutionId: institutionSelected,
-                            accountId: account[0].id,
-                            paymentId: item.id,
-                            name: `Biaya Transaksi via Midtrans (${item.transaction_id})`,
-                            credit: 4500,
-                            debit: 0
-                        }
-                        storeTransaction(costData, false);
-                    }
-                });
-            })
-        })
+    const handleSync = async () => {
+        const resp = await getPayments<PaymentType>({ yearId: yearSelected, institutionId: institutionSelected, sort: 'asc' });
+        for (const item of resp) {
+            const account = await getAccount<InstitutionAccountType>({ institutionId: item.institutionId, method: item.method });
+            const transactionData: TransactionType = {
+                yearId: yearSelected,
+                institutionId: institutionSelected,
+                accountId: account[0].id,
+                paymentId: item.id,
+                name: `Pembayaran ${item.method === 1 ? "Tunai" : "Online"} a.n ${item.personal.name} (${item.transaction_id})`,
+                credit: 0,
+                debit: item.amount,
+                created_at: item.created_at,
+                updated_at: item.updated_at
+            };
+            await storeTransaction(transactionData, false);
+            if (item.method === 2) {
+                const costData: TransactionType = {
+                    yearId: yearSelected,
+                    institutionId: institutionSelected,
+                    accountId: account[0].id,
+                    paymentId: item.id,
+                    name: `Biaya Transaksi via Midtrans (${item.transaction_id})`,
+                    credit: 4500,
+                    debit: 0
+                };
+                await storeTransaction(costData, false);
+            }
+        }
     }
 
     useEffect(() => {
         const fetchData = async () => {
-            const institutions = await getInstitution<OptionsType>({type: 'select'});
+            const institutions = await getInstitution<OptionsType>({ type: 'select' });
             setInstitutionOptions(institutions);
-            const years = await getyear<OptionsType>({type: 'select'});
+            const years = await getyear<OptionsType>({ type: 'select' });
             setYearOptions(years)
         }
         fetchData();
