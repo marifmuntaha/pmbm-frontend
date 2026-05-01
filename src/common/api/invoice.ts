@@ -15,9 +15,9 @@ async function store(params: Record<string, any> = {}) {
     return await api.create<InvoiceType>(baseUrl, params, true).then((resp) => resp);
 }
 
-async function show<T>(params: Record<string, any> = {}) {
+async function show(params: Record<string, any> = {}) {
     const baseUrl = `/invoice/${params.id}`
-    return await api.get<T>(baseUrl, params, true).then((resp) => resp.result);
+    return await api.get<InvoiceType>(baseUrl, params, true).then((resp) => resp.result);
 }
 
 async function update(params: Record<string, any> = {}, notification: boolean = true) {

@@ -17,11 +17,12 @@ import { getLogs, deleteLog, clearLogs, type PaginatedLogs, type SystemLogItem }
 import type { ColumnType } from "@/types";
 
 const SystemLog = () => {
-    const [loadData, setLoadData] = useState<boolean>(true);
+    const [isFetching, setIsFetching] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean | number | undefined>(false);
     const [logs, setLogs] = useState<SystemLogItem[]>([]);
     const [totalRows, setTotalRows] = useState(0);
     const [perPage, setPerPage] = useState(20);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const getBadgeColor = (level: string) => {
         switch (level) {
@@ -32,11 +33,90 @@ const SystemLog = () => {
         }
     };
 
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsFetching(true);
+            await getLogs({ page: currentPage, limit: perPage })
+                .then((resp: PaginatedLogs | null) => {
+                    if (resp) {
+                        setLogs(resp.data);
+                        setTotalRows(resp.total);
+                    }
+                })
+                .finally(() => setIsFetching(false));
+        }
+        fetchData();
+    }, [currentPage, perPage]);
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const handlePerRowsChange = (newPerPage: number, page: number) => {
+        setPerPage(newPerPage);
+        setCurrentPage(page);
+    };
+
+    const handleRefresh = () => {
+        setCurrentPage((prev) => {
+            return prev;
+        });
+        setIsFetching(true);
+        getLogs({ page: currentPage, limit: perPage })
+            .then((resp: PaginatedLogs | null) => {
+                if (resp) {
+                    setLogs(resp.data);
+                    setTotalRows(resp.total);
+                }
+            })
+            .finally(() => setIsFetching(false));
+    };
+
+    const handleDelete = async (id: number) => {
+        if (window.confirm("Hapus log ini?")) {
+            setLoading(id);
+            await deleteLog(id)
+                .then(() => {
+                    const remainingOnPage = logs.length - 1;
+                    const targetPage = remainingOnPage === 0 && currentPage > 1
+                        ? currentPage - 1
+                        : currentPage;
+                    setCurrentPage(targetPage);
+                    if (targetPage === currentPage) {
+                        setIsFetching(true);
+                        getLogs({ page: currentPage, limit: perPage })
+                            .then((resp: PaginatedLogs | null) => {
+                                if (resp) {
+                                    setLogs(resp.data);
+                                    setTotalRows(resp.total);
+                                }
+                            })
+                            .finally(() => setIsFetching(false));
+                    }
+                })
+                .finally(() => setLoading(false));
+        }
+    };
+
+    const handleClear = async () => {
+        if (window.confirm("Apakah Anda yakin ingin menghapus semua log?")) {
+            setIsFetching(true);
+            await clearLogs()
+                .then(() => {
+                    setLogs([]);
+                    setTotalRows(0);
+                    setCurrentPage(1);
+                })
+                .finally(() => setIsFetching(false));
+        }
+    };
+
     const Column: ColumnType<SystemLogItem>[] = [
         {
             name: "Waktu",
             selector: (row) => row.created_at,
-            sortable: true,
+            sortable: false,
+            width: "170px",
             cell: (row) => (
                 <span className="sub-text">
                     {new Date(row.created_at).toLocaleString('id-ID')}
@@ -46,7 +126,8 @@ const SystemLog = () => {
         {
             name: "Level",
             selector: (row) => row.level,
-            sortable: true,
+            sortable: false,
+            width: "100px",
             cell: (row) => (
                 <Badge color={getBadgeColor(row.level)}>
                     {row.level.toUpperCase()}
@@ -57,74 +138,36 @@ const SystemLog = () => {
             name: "User",
             selector: (row) => row.user?.name || '-',
             sortable: false,
+            width: "250px",
         },
         {
             name: "Pesan",
             selector: (row) => row.message,
             sortable: false,
+            width: "700px",
+            wrap: true,
         },
         {
             name: "IP Address",
             selector: (row) => row.ip_address || '-',
             sortable: false,
+            width: "150px",
         },
         {
             name: "Aksi",
             selector: (row) => row.id,
             sortable: false,
             width: "100px",
+            right: "true",
             cell: (row) => (
                 <ButtonGroup size="sm">
-                    <Button outline color="danger" onClick={async () => {
-                        if (window.confirm("Hapus log ini?")) {
-                            setLoading(row.id);
-                            await deleteLog(row.id)
-                                .then(() => setLoadData(true))
-                                .finally(() => setLoading(false));
-                        }
-                    }}>
+                    <Button outline color="danger" onClick={() => handleDelete(row.id)}>
                         {loading === row.id ? <Spinner size="sm" /> : <Icon name="trash" />}
                     </Button>
                 </ButtonGroup>
             ),
         },
     ];
-
-    const fetchLogs = (page: number, size: number = perPage) => {
-        setLoadData(true);
-        getLogs({ page, limit: size })
-            .then((resp: PaginatedLogs | null) => {
-                if (resp) {
-                    setLogs(resp.data);
-                    setTotalRows(resp.total);
-                }
-            })
-            .finally(() => setLoadData(false));
-    };
-
-    const handlePageChange = (page: number) => {
-        fetchLogs(page);
-    };
-
-    const handlePerRowsChange = async (newPerPage: number, page: number) => {
-        setPerPage(newPerPage);
-        fetchLogs(page, newPerPage);
-    };
-
-    const handleClear = async () => {
-        if (window.confirm("Apakah Anda yakin ingin menghapus semua log?")) {
-            setLoadData(true);
-            await clearLogs()
-                .then(() => setLoadData(true))
-                .finally(() => setLoadData(false));
-        }
-    };
-
-    useEffect(() => {
-        if (loadData) {
-            fetchLogs(1);
-        }
-    }, [loadData]);
 
     return (
         <React.Fragment>
@@ -148,7 +191,7 @@ const SystemLog = () => {
                                     </li>
                                     <li>
                                         <Button color="primary" size="sm" outline className="btn-white"
-                                            onClick={() => setLoadData(true)}>
+                                            onClick={handleRefresh}>
                                             <Icon name="redo" />
                                             <span>REFRESH</span>
                                         </Button>
@@ -166,7 +209,7 @@ const SystemLog = () => {
                             paginationTotalRows={totalRows}
                             onChangeRowsPerPage={handlePerRowsChange}
                             onChangePage={handlePageChange}
-                            progressPending={loadData}
+                            progressPending={isFetching}
                         />
                     </PreviewCard>
                 </Block>

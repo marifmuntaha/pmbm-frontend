@@ -38,6 +38,7 @@ const PrintLayout: React.FC<PrintLayoutProps> = ({
             <div className="p-4 bg-white" style={{ minHeight: "100vh" }}>
                 <div className="text-center mb-4">
                     <h3 className="mb-1">{reportTitle}</h3>
+                    <h4>PENERIMAAN MURID BARU MADRASAH</h4>
                     <h5 className="text-muted mb-3">Tahun Ajaran {yearContext?.name}</h5>
 
                     {headerContent && (

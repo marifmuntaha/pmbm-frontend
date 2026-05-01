@@ -102,7 +102,7 @@ const PaymentReport = () => {
         const params: string[] = [];
         if (year?.id) params.push(`yearId=${year.id}`);
         if (institutionId) params.push(`institutionId=${institutionId}`);
-        if (methodFilter) params.push(`method=${methodFilter}`);
+        if (methodFilter) params.push(`methodFilter=${methodFilter}`);
         if (dateFrom) params.push(`dateFrom=${moment(dateFrom).format("YYYY-MM-DD")}`);
         if (dateTo) params.push(`dateTo=${moment(dateTo).format("YYYY-MM-DD")}`);
 
@@ -112,7 +112,7 @@ const PaymentReport = () => {
     const handleExport = () => {
         const params: Record<string, any> = { yearId: year?.id };
         if (institutionId) params.institutionId = institutionId;
-        if (methodFilter) params.method = methodFilter;
+        if (methodFilter) params.methodFilter = methodFilter;
         if (dateFrom) params.dateFrom = moment(dateFrom).format("YYYY-MM-DD");
         if (dateTo) params.dateTo = moment(dateTo).format("YYYY-MM-DD");
         exportPaymentReport(params);
@@ -122,7 +122,7 @@ const PaymentReport = () => {
         if (year?.id) {
             const params: Record<string, any> = { yearId: year.id };
             if (institutionId) params.institutionId = institutionId;
-            if (methodFilter) params.method = methodFilter;
+            if (methodFilter) params.methodFilter = methodFilter;
             if (dateFrom) params.dateFrom = moment(dateFrom).format("YYYY-MM-DD");
             if (dateTo) params.dateTo = moment(dateTo).format("YYYY-MM-DD");
 

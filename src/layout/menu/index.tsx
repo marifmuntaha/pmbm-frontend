@@ -1,9 +1,9 @@
 import React, { useEffect, useLayoutEffect, type MouseEvent, type JSX } from "react";
-import { Icon } from "../../components";
+import { Icon } from "@/components";
 import classNames from "classnames";
 import { NavLink, useLocation } from "react-router";
-import { slideUp, slideDown, getParents } from "../../helpers";
-import { useThemeUpdate } from '../../common/hooks/useTheme';
+import { slideUp, slideDown, getParents } from "@/helpers";
+import { useThemeUpdate } from '@/common/hooks/useTheme';
 
 export interface MenuItem {
     heading?: string;

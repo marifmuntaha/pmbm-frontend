@@ -65,26 +65,31 @@ const InvoiceReportStudent = () => {
             name: "Jumlah",
             selector: (row: any) => formatCurrency(row.original_invoice),
             sortable: false,
+            right: "true"
         },
         {
             name: "Potongan",
             selector: (row: any) => formatCurrency(row.discount),
             sortable: false,
+            right: "true"
         },
         {
             name: "Total",
             selector: (row: any) => formatCurrency(row.original_amount),
             sortable: false,
+            right: "true"
         },
         {
             name: "Terbayar",
             selector: (row: any) => formatCurrency(row.payment),
             sortable: false,
+            right: "true"
         },
         {
             name: "Sisa Tagihan",
             selector: (row: any) => formatCurrency(row.unpaid),
             sortable: false,
+            right: "true"
         },
 
         {

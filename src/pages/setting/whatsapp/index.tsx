@@ -73,16 +73,16 @@ const Whatsapp: React.FC = () => {
                 </ButtonGroup>
             )
         }
-        if (results?.state === "connected" || results.state === "logged_in") {
+        if (results?.state === "connected" || results?.state === "logged_in") {
             return (
                 <ButtonGroup size="sm">
                     <Button outline color="info" id="reload" onClick={() => {
-                        alert("whatsapp terhubung")
+                        alert("WhatsApp terhubung")
                     }}>
                         <Icon name="reload" />
                     </Button>
                     <Tooltip placement="top" isOpen={tooltip.reload} target="reload" toggle={() => setTooltip({...tooltip, reload: !tooltip.reload})}>
-                        Hubungkan Ulang Whatsapp
+                        Hubung kan Ulang Whatsapp
                     </Tooltip>
                     <Button outline color="danger" id="destroy" onClick={() => handleDestroy(data?.id)}>
                         {loading === data.id ? <Spinner size="sm" /> : <Icon name="trash" />}
@@ -102,7 +102,7 @@ const Whatsapp: React.FC = () => {
             sortable: false,
         },
         {
-            name: "ID Whatsapp",
+            name: "ID WhatsApp",
             selector: (row) => row?.device,
             sortable: false,
         },
@@ -122,14 +122,14 @@ const Whatsapp: React.FC = () => {
             sortable: false,
             cell: (row) => {
                 const {results} = row.status
-                if (results.state === "disconnected") {
+                if (results?.state === "disconnected") {
                     return <Badge pill color='danger'>Tidak Terhubung</Badge>
                 }
-                if (results.is_connected === true && results.is_logged_in === false) {
+                if (results?.is_connected === true && results?.is_logged_in === false) {
                     return <Badge pill color='warning'>Perangkat Logout</Badge>
                 }
-                if (results.state === "logged_in") {
-                    return <Badge pill color='success'>{results.jid}</Badge>
+                if (results?.state === "logged_in") {
+                    return <Badge pill color='success'>{results?.jid}</Badge>
                 }
             }
         },
@@ -161,7 +161,7 @@ const Whatsapp: React.FC = () => {
                 .then((resp) => setWhatsapps(resp))
                 .finally(() => setLoadData(false));
         }
-    }, [loadData]);
+    }, [loadData, paramsFetch]);
 
     return (
         <React.Fragment>

@@ -9,9 +9,11 @@ export interface ColumnType<T> {
     right?: string;
     center?: boolean;
     style?: any
+    wrap?: boolean;
 }
 
 export type ModalInvoiceType = {
     form: boolean;
     show: boolean;
+    add: boolean;
 }

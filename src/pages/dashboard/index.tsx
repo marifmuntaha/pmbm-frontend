@@ -5,6 +5,7 @@ import Student from "@/pages/dashboard/partials/student";
 import Operator from "@/pages/dashboard/partials/operator";
 import Guest from "@/pages/dashboard/partials/guest";
 import Cottage from "@/pages/dashboard/partials/cottage";
+import Teller from "@/pages/dashboard/partials/teller";
 
 const Dashboard = () => {
     const { user } = useAuthContext()
@@ -19,6 +20,8 @@ const Dashboard = () => {
             return <Student />
         case 5:
             return <Cottage />
+        case 6:
+            return <Teller/>
         default:
             return <Guest />
     }

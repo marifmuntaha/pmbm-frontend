@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { menuDefault, menuAdmin, menuOperator, menuStudent, menuTreasurer, menuBoarding } from "./sidebar/MenuData";
+import { menuDefault, menuAdmin, menuOperator, menuStudent, menuTreasurer, menuBoarding, menuTeller } from "./sidebar/MenuData";
 import Sidebar from "./sidebar";
 import Head from "./head";
 import Header from "./header";
@@ -24,6 +24,8 @@ export const WithSidebar = ({ title }: { title?: string }) => {
                 return menuStudent
             case 5:
                 return menuBoarding
+            case 6:
+                return menuTeller
             default:
                 return menuDefault
         }

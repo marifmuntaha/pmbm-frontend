@@ -58,8 +58,6 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
         apiCall.then((resp) => {
             if (resp.status === 'success') {
                 const invoiceId = mode === 'create' ? resp.result?.id : invoice?.id;
-
-                // Handle invoice details
                 const detailPromises = invoiceDetail.map((item) => {
                     const invoiceDetailData: InvoiceDetailType = {
                         invoiceId: invoiceId,
@@ -91,22 +89,23 @@ const Form = ({ isOpen, toggle, mode, user, products = [], invoice, setLoadData 
         return amount !== undefined ? amount : 0;
     }, [invoiceDetail]);
 
-    // Effect for Create Mode: Initialize from products
     useEffect(() => {
-        if (mode === 'create' && products.length > 0 && isOpen) {
-            setInvoiceDetail(products.map((product): FormInvoiceDetailType => ({
-                productId: product.id,
-                name: product.name,
-                price: product.price ?? 0,
-                discount: 0,
-                amount: product.price ?? 0,
-                discountType: 'Rp',
-                discountValue: 0
-            })));
+        const storeData = async () => {
+            if (mode === 'create' && products.length > 0 && isOpen) {
+                setInvoiceDetail(products.map((product): FormInvoiceDetailType => ({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price ?? 0,
+                    discount: 0,
+                    amount: product.price ?? 0,
+                    discountType: 'Rp',
+                    discountValue: 0
+                })));
+            }
         }
+        storeData();
     }, [mode, products, isOpen]);
 
-    // Effect for Edit Mode: Fetch existing details
     useEffect(() => {
         if (mode === 'edit' && invoice?.id && isOpen) {
             getInvoiceDetail<InvoiceDetailType>({ invoiceId: invoice.id }).then((resp) => {

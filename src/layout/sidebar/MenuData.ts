@@ -262,6 +262,23 @@ const menuBoarding = [
     }
 ];
 
+const menuTeller = [
+    {
+        icon: "monitor",
+        text: "Beranda",
+        link: "/",
+    },
+    {
+        icon: "money",
+        text: "Transaksi",
+        link: "/transaksi",
+    },
+    {
+        icon: "users",
+        text: "Data Pendaftar",
+        link: "/data-pendaftar",
+    }
+]
 
 const menuDefault = [
     {
@@ -286,4 +303,4 @@ const menuDefault = [
     },
 ];
 
-export { menuDefault, menuAdmin, menuTreasurer, menuOperator, menuStudent, menuBoarding };
+export { menuDefault, menuAdmin, menuTreasurer, menuOperator, menuStudent, menuBoarding, menuTeller };

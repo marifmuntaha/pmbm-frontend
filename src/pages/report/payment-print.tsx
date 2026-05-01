@@ -35,14 +35,14 @@ const PaymentReportPrint = () => {
 
             setLoading(true);
             try {
-                // Fetch institution name if filtered
                 if (institutionId) {
                     await showInstitution({ id: institutionId }).then((resp) => {
                         setInstitutionName(resp?.surname || "");
                     });
                 }
 
-                const params: Record<string, any> = { yearId };
+                const params: Record<string, any> = { type: 'datatable' };
+                if (yearId) params.yearId = yearId;
                 if (institutionId) params.institutionId = institutionId;
                 if (method) params.method = method;
                 if (dateFrom) params.dateFrom = dateFrom;
@@ -104,9 +104,7 @@ const PaymentReportPrint = () => {
                     <tr key={index}>
                         <td className="text-center">{index + 1}</td>
                         <td>{moment(payment.transaction_time).format("DD/MM/YYYY HH:mm")}</td>
-                        {/* @ts-ignore */}
                         <td>{payment.name}</td>
-                        {/* @ts-ignore */}
                         <td>{payment.reference || "-"}</td>
                         <td>{payment.method === 1 ? "Cash" : "Midtrans"}</td>
                         <td className="text-end">{formatCurrency(payment.amount)}</td>

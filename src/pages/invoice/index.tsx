@@ -27,11 +27,8 @@ import { get as getProduct } from "@/common/api/master/product";
 import { studentInvoice } from "@/common/api/student";
 import { sendWhatsapp } from "@/common/api/invoice";
 import { useNavigate } from "react-router-dom";
+import Add from "@/pages/invoice/add.tsx";
 
-// ---------------------------------------------------------------------------
-// ActionCell — komponen terpisah agar state isOpen tidak menyebabkan
-// Column array di-recreate
-// ---------------------------------------------------------------------------
 interface ActionCellProps {
     row: StudentInvoiceType;
     onGenerate: (row: StudentInvoiceType) => void;
@@ -94,7 +91,6 @@ const ActionCell = React.memo(({ row, onGenerate, onEdit, onView, onSendWa }: Ac
     );
 });
 
-// ---------------------------------------------------------------------------
 
 const Invoice = () => {
     const year = useYearContext()
@@ -105,6 +101,7 @@ const Invoice = () => {
     const [modal, setModal] = useState<ModalInvoiceType>({
         form: false,
         show: false,
+        add: false
     })
     const [user, setUser] = useState<{ id?: number, address: string, period?: string, verification: StudentVerificationType | undefined }>()
     const [products, setProducts] = useState<ProductType[]>([])
@@ -194,6 +191,7 @@ const Invoice = () => {
             name: "Jumlah",
             selector: (row) => row.invoice?.amount && formatCurrency(row.invoice.amount),
             sortable: false,
+            right: "true"
         },
         {
             name: "Status",
@@ -272,6 +270,21 @@ const Invoice = () => {
                                         <ul className="nk-block-tools g-3">
                                             <li>
                                                 <Button
+                                                    outline
+                                                    color="info"
+                                                    size="sm"
+                                                    onClick={() => setModal({
+                                                        show: false,
+                                                        form: false,
+                                                        add: true
+                                                    })}
+                                                >
+                                                    <Icon name="plus" /><span>TAMBAH</span>
+                                                </Button>
+                                            </li>
+                                            <li>
+                                                <Button
+                                                    outline
                                                     color="success"
                                                     size="sm"
                                                     onClick={() => handleSendBuckWA()}
@@ -300,6 +313,7 @@ const Invoice = () => {
                     invoice={invoice}
                     setLoadData={setLoadData}
                 />
+                <Add isOpen={modal.add} toggle={() => setModal({...modal, add: !modal.add})} setLoadData={setLoadData} />
             </Content>
         </React.Fragment >
     )

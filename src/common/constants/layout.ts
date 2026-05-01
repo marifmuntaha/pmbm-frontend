@@ -5,7 +5,8 @@ export const ROLE_NAME = [
     { id: 2, name: 'Operator' },
     { id: 3, name: 'Bendahara' },
     { id: 4, name: 'Pendaftar' },
-    { id: 5, name: 'Operator Pondok' }
+    { id: 5, name: 'Operator Pondok' },
+    { id: 6, name: 'Teller' },
 ]
 
 export const SIZE = ["xs", "sm", "md", "lg", "xl"]

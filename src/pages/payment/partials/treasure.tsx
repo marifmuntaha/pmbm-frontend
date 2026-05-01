@@ -78,6 +78,7 @@ const Treasure = () => {
             name: "Jumlah",
             selector: (row) => formatCurrency(row.amount),
             sortable: false,
+            right: "true"
         },
 
         {
