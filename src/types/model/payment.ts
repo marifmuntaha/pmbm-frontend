@@ -1,4 +1,4 @@
-import type {StudentPersonalType} from "@/types";
+import type {InstitutionType, StudentPersonalType, UserType} from "@/types";
 
 export type PaymentChannelType = {
     group: string,
@@ -54,6 +54,9 @@ export type PaymentType = {
     amount: number;
     created_at: string;
     updated_at: string;
-    deposited: number;
-    personal: Partial<StudentPersonalType>
+    deposited?: number;
+    createdBy?: number;
+    personal?: Partial<StudentPersonalType>
+    institution?: Partial<InstitutionType>
+    creator?: Partial<UserType>
 }

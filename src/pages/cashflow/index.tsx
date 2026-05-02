@@ -14,16 +14,16 @@ import {
 import Content from "@/layout/content";
 import { get as getTransaction, dashboard as dashboardTransaction } from "../../common/api/payment/transaction"
 import { get as getAccount } from "@/common/api/institution/account"
-import type {ColumnType, OptionsType, TransactionDashboardType, TransactionType} from "@/types";
+import type { ColumnType, OptionsType, TransactionDashboardType, TransactionType } from "@/types";
 import { useYearContext } from "@/common/hooks/useYearContext";
 import { useAuthContext } from "@/common/hooks/useAuthContext";
 import { useInstitutionContext } from "@/common/hooks/useInstitutionContext";
 import Partial from "@/pages/cashflow/partial"
 import { printReceipt } from "@/pages/cashflow/printReceipt";
-import {Card, Col, FormGroup, Label, Row} from "reactstrap";
+import { Card, Col, FormGroup, Label, Row } from "reactstrap";
 import DatePicker from "react-datepicker";
 import moment from "moment/moment";
-import {formatCurrency} from "@/helpers";
+import { formatCurrency } from "@/helpers";
 
 const Cashflow = () => {
     const year = useYearContext();
@@ -100,7 +100,7 @@ const Cashflow = () => {
             right: "true",
             cell: (row) => {
                 return row.debit === 0 && <Button color="info" outline size="xs" onClick={() => handlePrintRow(row)}>
-                    <Icon name="printer"/>
+                    <Icon name="printer" />
                 </Button>
             }
         },
